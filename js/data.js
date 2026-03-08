@@ -16,6 +16,10 @@ const AppData = {
             data.expenses = [];
             this.saveData(data);
         }
+        if (!Array.isArray(data.structure)) {
+            data.structure = this.getDefaultStructure();
+            this.saveData(data);
+        }
 
         return data;
     },
@@ -287,6 +291,7 @@ const AppData = {
                     notes: 'Perbaikan sound system'
                 }
             ],
+            structure: this.getDefaultStructure(),
             events: [
                 {
                     id: '1',
@@ -387,6 +392,17 @@ const AppData = {
                 }
             ]
         };
+    },
+
+    getDefaultStructure() {
+        return [
+            { id: 's1', role: 'Gembala Sidang', name: 'Pdt. Andreas Simanjuntak', phone: '0812-1111-2222', email: 'andreas@gerejaku.id', notes: '' },
+            { id: 's2', role: 'Hamba Tuhan', name: 'Pdt. Maria Lestari', phone: '0812-3333-4444', email: 'maria@gerejaku.id', notes: '' },
+            { id: 's3', role: 'Ketua Majelis', name: 'Bpk. Yohanes Lim', phone: '0812-5555-6666', email: 'yohanes@gerejaku.id', notes: '' },
+            { id: 's4', role: 'Wakil Ketua Majelis', name: 'Bpk. Daniel Santoso', phone: '0813-1234-5678', email: 'daniel@gerejaku.id', notes: '' },
+            { id: 's5', role: 'Sekretaris', name: 'Ibu Deborah', phone: '0812-7777-8888', email: 'deborah@gerejaku.id', notes: '' },
+            { id: 's6', role: 'Bendahara', name: 'Ibu Ruth', phone: '0812-8888-3434', email: 'ruth@gerejaku.id', notes: '' }
+        ];
     },
 
     // Helper function to get week start (Sunday)
@@ -545,6 +561,39 @@ const AppData = {
     deleteExpense(id) {
         const data = this.getData();
         data.expenses = (data.expenses || []).filter(e => e.id !== id);
+        this.saveData(data);
+    },
+
+    // Structure (church board)
+    getStructure() {
+        return this.getData().structure || [];
+    },
+
+    addStructure(entry) {
+        const data = this.getData();
+        entry.id = this.generateId();
+        data.structure = data.structure || [];
+        data.structure.push(entry);
+        this.saveData(data);
+        this.addActivity('structure', 'Structure added', `${entry.role} - ${entry.name}`);
+        return entry;
+    },
+
+    updateStructure(id, updates) {
+        const data = this.getData();
+        data.structure = data.structure || [];
+        const idx = data.structure.findIndex(s => s.id === id);
+        if (idx !== -1) {
+            data.structure[idx] = { ...data.structure[idx], ...updates };
+            this.saveData(data);
+            return data.structure[idx];
+        }
+        return null;
+    },
+
+    deleteStructure(id) {
+        const data = this.getData();
+        data.structure = (data.structure || []).filter(s => s.id !== id);
         this.saveData(data);
     },
 

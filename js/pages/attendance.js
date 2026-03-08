@@ -3,105 +3,87 @@
 // ============================================
 
 const Attendance = {
-    coreLeaders: [
-        { role: 'Pendeta Utama', name: 'Pdt. Andreas Simanjuntak', phone: '0812-1111-2222', email: 'andreas@gerejaku.id' },
-        { role: 'Pendeta Pembantu', name: 'Pdt. Maria Lestari', phone: '0812-3333-4444', email: 'maria@gerejaku.id' },
-        { role: 'Penatua Utama', name: 'Bpk. Yohanes Lim', phone: '0812-5555-6666', email: 'yohanes@gerejaku.id' }
-    ],
-
-    teams: [
-        { name: 'Ibadah Umum', lead: 'Pdt. Andreas Simanjuntak', members: 18, contact: '0812-1111-2222', schedule: 'Minggu 07:00' },
-        { name: 'Sekolah Minggu', lead: 'Ibu Deborah', members: 14, contact: '0812-7777-8888', schedule: 'Minggu 09:00' },
-        { name: 'Pemuda Remaja', lead: 'Bpk. Daniel', members: 12, contact: '0813-1234-5678', schedule: 'Sabtu 18:00' },
-        { name: 'Pujian & Penyembahan', lead: 'Sdri. Grace', members: 10, contact: '0812-9999-0000', schedule: 'Kamis 19:00' },
-        { name: 'Multimedia', lead: 'Sdr. Ardi', members: 8, contact: '0812-4444-1212', schedule: 'Minggu 06:00' },
-        { name: 'Diakonia & Sosial', lead: 'Ibu Ruth', members: 9, contact: '0812-8888-3434', schedule: 'Fleksibel' }
-    ],
+    structure: [],
+    filters: {
+        search: ''
+    },
 
     render() {
-        const totalTeams = this.teams.length;
-        const totalServants = this.teams.reduce((sum, t) => sum + t.members, 0);
+        this.structure = AppData.getStructure();
+        const filtered = this.getFiltered();
 
         const content = document.getElementById('content');
         content.innerHTML = `
             <div class="page-header">
                 <h1 class="page-title">Struktur Pengurus Gereja</h1>
-                <button class="btn btn-primary" onclick="Attendance.showTeamListPrint()">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M6 9V2H18V9" stroke="currentColor" stroke-width="2"/><path d="M6 18H5A2 2 0 0 1 3 16V11A2 2 0 0 1 5 9H19A2 2 0 0 1 21 11V16A2 2 0 0 1 19 18H18" stroke="currentColor" stroke-width="2"/><rect x="6" y="14" width="12" height="8" stroke="currentColor" stroke-width="2"/></svg>
-                    Cetak Struktur
-                </button>
-            </div>
-
-            <div class="summary-grid" style="margin-bottom: 20px;">
-                <div class="summary-card">
-                    <div class="summary-label">Total Komisi</div>
-                    <div class="summary-value">${totalTeams}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-label">Total Pelayan</div>
-                    <div class="summary-value">${totalServants}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-label">Jumlah Pendeta</div>
-                    <div class="summary-value">${this.coreLeaders.filter(l => l.role.includes('Pendeta')).length}</div>
-                </div>
-                <div class="summary-card">
-                    <div class="summary-label">Penatua</div>
-                    <div class="summary-value">${this.coreLeaders.filter(l => l.role.includes('Penatua')).length}</div>
+                <div class="finance-header-actions">
+                    <button class="btn btn-secondary" onclick="Attendance.printStructure()">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M6 9V2H18V9" stroke="currentColor" stroke-width="2"/><path d="M6 18H5A2 2 0 0 1 3 16V11A2 2 0 0 1 5 9H19A2 2 0 0 1 21 11V16A2 2 0 0 1 19 18H18" stroke="currentColor" stroke-width="2"/><rect x="6" y="14" width="12" height="8" stroke="currentColor" stroke-width="2"/></svg>
+                        Cetak Struktur
+                    </button>
+                    <button class="btn btn-primary" onclick="Attendance.showAddModal()">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        Tambah Pengurus
+                    </button>
                 </div>
             </div>
 
-            <div class="card" style="margin-bottom: 20px;">
-                <div class="card-header">
-                    <h3 class="card-title">Kepemimpinan Inti</h3>
-                </div>
-                <div class="summary-grid" style="margin-bottom: 0; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
-                    ${this.coreLeaders.map(leader => `
-                        <div class="summary-card" style="align-items: flex-start;">
-                            <div class="summary-label">${leader.role}</div>
-                            <div class="summary-value" style="font-size: 1.1rem;">${leader.name}</div>
-                            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 6px;">
-                                <div>📞 ${leader.phone}</div>
-                                <div>✉️ ${leader.email}</div>
-                            </div>
-                        </div>
-                    `).join('')}
+            <div class="filters" style="margin-bottom: 20px;">
+                <div class="filter-group">
+                    <label>Cari:</label>
+                    <input type="text" class="form-input" placeholder="Role atau nama..." value="${this.filters.search}" oninput="Attendance.handleSearch(this.value)">
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Daftar Komisi & Pengurus</h3>
-                </div>
                 <div class="table-container">
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Komisi</th>
-                                <th>Ketua</th>
-                                <th>Jumlah Pelayan</th>
+                                <th>Role</th>
+                                <th>Nama</th>
                                 <th>Kontak</th>
-                                <th>Jadwal</th>
+                                <th>Catatan</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${this.teams.map(team => `
+                            ${filtered.length ? filtered.map(entry => `
                                 <tr>
-                                    <td>${team.name}</td>
-                                    <td>${team.lead}</td>
-                                    <td>${team.members} orang</td>
-                                    <td>${team.contact}</td>
-                                    <td>${team.schedule}</td>
+                                    <td>${entry.role}</td>
+                                    <td>${entry.name}</td>
+                                    <td>
+                                        <div>${entry.phone || '-'}</div>
+                                        <div style="color: var(--text-secondary); font-size: 0.86rem;">${entry.email || ''}</div>
+                                    </td>
+                                    <td>${entry.notes || '-'}</td>
                                     <td>
                                         <div class="table-actions">
-                                            <button class="action-btn view" onclick="Attendance.showTeamDetail('${team.name}')" title="Detail">
+                                            <button class="action-btn view" onclick="Attendance.showDetailModal('${entry.id}')" title="Detail">
                                                 <svg viewBox="0 0 24 24" fill="none"><path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
+                                            </button>
+                                            <button class="action-btn edit" onclick="Attendance.showEditModal('${entry.id}')" title="Edit">
+                                                <svg viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2"/></svg>
+                                            </button>
+                                            <button class="action-btn delete" onclick="Attendance.deleteEntry('${entry.id}')" title="Hapus">
+                                                <svg viewBox="0 0 24 24" fill="none"><polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2"/></svg>
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                            `).join('')}
+                            `).join('') : `
+                                <tr>
+                                    <td colspan="5">
+                                        ${Components.emptyState(
+                                            '<svg viewBox="0 0 24 24" fill="none"><path d="M12 3L3 8V16L12 21L21 16V8L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 21V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M21 8L12 12L3 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+                                            'Belum Ada Pengurus',
+                                            'Tambah pengurus baru untuk mengisi struktur gereja.',
+                                            'Tambah Pengurus',
+                                            'Attendance.showAddModal()'
+                                        )}
+                                    </td>
+                                </tr>
+                            `}
                         </tbody>
                     </table>
                 </div>
@@ -109,51 +91,200 @@ const Attendance = {
         `;
     },
 
-    showTeamDetail(teamName) {
-        const team = this.teams.find(t => t.name === teamName);
-        if (!team) return;
+    getFiltered() {
+        if (!this.filters.search) return this.structure;
+        const q = this.filters.search.toLowerCase();
+        return this.structure.filter(item =>
+            item.role.toLowerCase().includes(q) ||
+            item.name.toLowerCase().includes(q) ||
+            (item.email || '').toLowerCase().includes(q) ||
+            (item.phone || '').includes(q)
+        );
+    },
+
+    handleSearch(value) {
+        this.filters.search = value;
+        this.render();
+    },
+
+    showAddModal() {
+        const bodyHtml = `
+            <form id="structureForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">Role/Jabatan</label>
+                        <input type="text" class="form-input" name="role" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Nama</label>
+                        <input type="text" class="form-input" name="name" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Telepon</label>
+                        <input type="tel" class="form-input" name="phone">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" name="email">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Catatan</label>
+                    <textarea class="form-textarea" name="notes" rows="2" placeholder="Opsional..."></textarea>
+                </div>
+            </form>
+        `;
+
+        const footerHtml = `
+            <button class="btn btn-secondary" onclick="Components.closeModal()">Batal</button>
+            <button class="btn btn-primary" onclick="Attendance.saveEntry()">Simpan</button>
+        `;
+
+        Components.modal('Tambah Pengurus', bodyHtml, footerHtml);
+    },
+
+    saveEntry() {
+        const form = document.getElementById('structureForm');
+        const data = Object.fromEntries(new FormData(form).entries());
+
+        if (!data.role || !data.name) {
+            Components.toast('Role dan nama wajib diisi', 'error');
+            return;
+        }
+
+        AppData.addStructure(data);
+        Components.toast('Pengurus berhasil ditambahkan', 'success');
+        Components.closeModal();
+        this.render();
+    },
+
+    showEditModal(id) {
+        const entry = this.structure.find(s => s.id === id);
+        if (!entry) return;
+
+        const bodyHtml = `
+            <form id="structureEditForm">
+                <input type="hidden" name="id" value="${entry.id}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">Role/Jabatan</label>
+                        <input type="text" class="form-input" name="role" value="${entry.role}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Nama</label>
+                        <input type="text" class="form-input" name="name" value="${entry.name}" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Telepon</label>
+                        <input type="tel" class="form-input" name="phone" value="${entry.phone || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" name="email" value="${entry.email || ''}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Catatan</label>
+                    <textarea class="form-textarea" name="notes" rows="2">${entry.notes || ''}</textarea>
+                </div>
+            </form>
+        `;
+
+        const footerHtml = `
+            <button class="btn btn-secondary" onclick="Components.closeModal()">Batal</button>
+            <button class="btn btn-primary" onclick="Attendance.saveEditedEntry()">Simpan Perubahan</button>
+        `;
+
+        Components.modal('Edit Pengurus', bodyHtml, footerHtml);
+    },
+
+    saveEditedEntry() {
+        const form = document.getElementById('structureEditForm');
+        const data = Object.fromEntries(new FormData(form).entries());
+
+        if (!data.id || !data.role || !data.name) {
+            Components.toast('Role dan nama wajib diisi', 'error');
+            return;
+        }
+
+        AppData.updateStructure(data.id, {
+            role: data.role,
+            name: data.name,
+            phone: data.phone,
+            email: data.email,
+            notes: data.notes
+        });
+
+        Components.toast('Pengurus berhasil diperbarui', 'success');
+        Components.closeModal();
+        this.render();
+    },
+
+    deleteEntry(id) {
+        const entry = this.structure.find(s => s.id === id);
+        if (!entry) return;
+
+        Components.confirm(
+            'Hapus Pengurus',
+            `Yakin ingin menghapus ${entry.name}?`,
+            () => {
+                AppData.deleteStructure(id);
+                Components.toast('Pengurus berhasil dihapus', 'success');
+                this.render();
+            }
+        );
+    },
+
+    showDetailModal(id) {
+        const entry = this.structure.find(s => s.id === id);
+        if (!entry) return;
 
         const bodyHtml = `
             <div style="display: grid; gap: 12px;">
                 <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--background); border-radius: var(--radius);">
-                    <span style="color: var(--text-secondary);">Komisi</span>
-                    <span>${team.name}</span>
+                    <span style="color: var(--text-secondary);">Role</span>
+                    <span>${entry.role}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--background); border-radius: var(--radius);">
-                    <span style="color: var(--text-secondary);">Ketua</span>
-                    <span>${team.lead}</span>
+                    <span style="color: var(--text-secondary);">Nama</span>
+                    <span>${entry.name}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--background); border-radius: var(--radius);">
-                    <span style="color: var(--text-secondary);">Jumlah Pelayan</span>
-                    <span>${team.members} orang</span>
+                    <span style="color: var(--text-secondary);">Telepon</span>
+                    <span>${entry.phone || '-'}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--background); border-radius: var(--radius);">
-                    <span style="color: var(--text-secondary);">Kontak</span>
-                    <span>${team.contact}</span>
+                    <span style="color: var(--text-secondary);">Email</span>
+                    <span>${entry.email || '-'}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--background); border-radius: var(--radius);">
-                    <span style="color: var(--text-secondary);">Jadwal</span>
-                    <span>${team.schedule}</span>
+                <div style="padding: 10px; background: var(--background); border-radius: var(--radius);">
+                    <span style="color: var(--text-secondary); display: block; margin-bottom: 4px;">Catatan</span>
+                    <span>${entry.notes || '-'}</span>
                 </div>
             </div>
         `;
 
         const footerHtml = `
             <button class="btn btn-secondary" onclick="Components.closeModal()">Tutup</button>
+            <button class="btn btn-primary" onclick="Components.closeModal(); Attendance.showEditModal('${entry.id}')">Edit</button>
         `;
 
-        Components.modal('Detail Komisi', bodyHtml, footerHtml);
+        Components.modal('Detail Pengurus', bodyHtml, footerHtml);
     },
 
-    showTeamListPrint() {
-        const rows = this.teams.map((team, idx) => `
+    printStructure() {
+        const rows = this.structure.map((item, idx) => `
             <tr>
                 <td>${idx + 1}</td>
-                <td>${team.name}</td>
-                <td>${team.lead}</td>
-                <td>${team.members} orang</td>
-                <td>${team.contact}</td>
-                <td>${team.schedule}</td>
+                <td>${item.role}</td>
+                <td>${item.name}</td>
+                <td>${item.phone || ''}</td>
+                <td>${item.email || ''}</td>
+                <td>${item.notes || ''}</td>
             </tr>
         `).join('');
 
@@ -186,11 +317,11 @@ const Attendance = {
                     <thead>
                         <tr>
                             <th>No</th>
-                            <th>Komisi</th>
-                            <th>Ketua</th>
-                            <th>Jumlah Pelayan</th>
-                            <th>Kontak</th>
-                            <th>Jadwal</th>
+                            <th>Role</th>
+                            <th>Nama</th>
+                            <th>Telepon</th>
+                            <th>Email</th>
+                            <th>Catatan</th>
                         </tr>
                     </thead>
                     <tbody>${rows}</tbody>
