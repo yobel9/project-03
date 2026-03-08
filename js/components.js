@@ -145,6 +145,15 @@ const Components = {
         `;
     },
 
+    // Keep text input focused after page re-render (used by live search fields)
+    preserveInputFocus(inputId, value = '') {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        input.focus();
+        const cursorPos = String(value).length;
+        input.setSelectionRange(cursorPos, cursorPos);
+    },
+
     // Loading spinner
     loading() {
         return '<div class="loading" style="text-align: center; padding: 40px;"><span style="display: inline-block; width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite;"></span></div>';

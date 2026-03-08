@@ -59,7 +59,7 @@ const Members = {
                 <div class="filters">
                     <div class="filter-group">
                         <label>Pencarian:</label>
-                        <input type="text" class="form-input" placeholder="Nama, NIK, email, atau telepon..." 
+                        <input id="membersSearchInput" type="text" class="form-input" placeholder="Nama, NIK, email, atau telepon..." 
                                value="${this.filters.search}" oninput="Members.handleSearch(this.value)">
                     </div>
                     <div class="filter-group">
@@ -254,6 +254,7 @@ const Members = {
         this.filters.search = value;
         this.applyFilters();
         this.render();
+        Components.preserveInputFocus('membersSearchInput', value);
     },
 
     handleStatusFilter(value) {

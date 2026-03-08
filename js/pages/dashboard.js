@@ -82,7 +82,7 @@ const Dashboard = {
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Acara Mendatang</h3>
-                        <button class="btn btn-sm btn-secondary" onclick="App.navigateTo('events')">Lihat Semua</button>
+                        <button class="btn btn-sm btn-secondary" onclick="App.navigateTo('announcements-events')">Lihat Semua</button>
                     </div>
                     <div class="event-list">
                         ${events.length > 0 ? events.map(event => {
@@ -135,7 +135,7 @@ const Dashboard = {
                         <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M12 1V23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17 5H9.5C7.01 5 5 7.01 5 9.5S7.01 14 9.5 14H14.5C16.99 14 19 16.01 19 18.5S16.99 23 14.5 23H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         Input Donasi
                     </button>
-                    <button class="btn btn-secondary" onclick="App.navigateTo('events')">
+                    <button class="btn btn-secondary" onclick="App.navigateTo('announcements-events')">
                         <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                         Buat Acara
                     </button>

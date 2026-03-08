@@ -20,6 +20,36 @@ const AppData = {
             data.structure = this.getDefaultStructure();
             this.saveData(data);
         }
+        if (Array.isArray(data.structure)) {
+            let hasStructureUpdate = false;
+            data.structure = data.structure.map((item) => {
+                if (item && typeof item === 'object' && item.periodeJabatan === undefined) {
+                    hasStructureUpdate = true;
+                    return { ...item, periodeJabatan: '' };
+                }
+                return item;
+            });
+            if (hasStructureUpdate) {
+                this.saveData(data);
+            }
+        }
+        if (!Array.isArray(data.worshipSchedules)) {
+            data.worshipSchedules = this.getDefaultWorshipSchedules();
+            this.saveData(data);
+        }
+        if (Array.isArray(data.worshipSchedules)) {
+            let hasWorshipUpdate = false;
+            data.worshipSchedules = data.worshipSchedules.map((item) => {
+                if (item && typeof item === 'object' && item.serviceDetails === undefined) {
+                    hasWorshipUpdate = true;
+                    return { ...item, serviceDetails: '' };
+                }
+                return item;
+            });
+            if (hasWorshipUpdate) {
+                this.saveData(data);
+            }
+        }
 
         return data;
     },
@@ -292,6 +322,7 @@ const AppData = {
                 }
             ],
             structure: this.getDefaultStructure(),
+            worshipSchedules: this.getDefaultWorshipSchedules(),
             events: [
                 {
                     id: '1',
@@ -396,12 +427,21 @@ const AppData = {
 
     getDefaultStructure() {
         return [
-            { id: 's1', role: 'Gembala Sidang', name: 'Pdt. Andreas Simanjuntak', phone: '0812-1111-2222', email: 'andreas@gerejaku.id', notes: '' },
-            { id: 's2', role: 'Hamba Tuhan', name: 'Pdt. Maria Lestari', phone: '0812-3333-4444', email: 'maria@gerejaku.id', notes: '' },
-            { id: 's3', role: 'Ketua Majelis', name: 'Bpk. Yohanes Lim', phone: '0812-5555-6666', email: 'yohanes@gerejaku.id', notes: '' },
-            { id: 's4', role: 'Wakil Ketua Majelis', name: 'Bpk. Daniel Santoso', phone: '0813-1234-5678', email: 'daniel@gerejaku.id', notes: '' },
-            { id: 's5', role: 'Sekretaris', name: 'Ibu Deborah', phone: '0812-7777-8888', email: 'deborah@gerejaku.id', notes: '' },
-            { id: 's6', role: 'Bendahara', name: 'Ibu Ruth', phone: '0812-8888-3434', email: 'ruth@gerejaku.id', notes: '' }
+            { id: 's1', role: 'Gembala Sidang', name: 'Pdt. Andreas Simanjuntak', periodeJabatan: '2024-2028', phone: '0812-1111-2222', email: 'andreas@gerejaku.id', notes: '' },
+            { id: 's2', role: 'Hamba Tuhan', name: 'Pdt. Maria Lestari', periodeJabatan: '2024-2028', phone: '0812-3333-4444', email: 'maria@gerejaku.id', notes: '' },
+            { id: 's3', role: 'Ketua Majelis', name: 'Bpk. Yohanes Lim', periodeJabatan: '2025-2029', phone: '0812-5555-6666', email: 'yohanes@gerejaku.id', notes: '' },
+            { id: 's4', role: 'Wakil Ketua Majelis', name: 'Bpk. Daniel Santoso', periodeJabatan: '2025-2029', phone: '0813-1234-5678', email: 'daniel@gerejaku.id', notes: '' },
+            { id: 's5', role: 'Sekretaris', name: 'Ibu Deborah', periodeJabatan: '2025-2029', phone: '0812-7777-8888', email: 'deborah@gerejaku.id', notes: '' },
+            { id: 's6', role: 'Bendahara', name: 'Ibu Ruth', periodeJabatan: '2025-2029', phone: '0812-8888-3434', email: 'ruth@gerejaku.id', notes: '' }
+        ];
+    },
+
+    getDefaultWorshipSchedules() {
+        return [
+            { id: 'ws1', name: 'Ibadah Raya', category: 'routine', dayOfWeek: 'Sunday', date: '', startTime: '07:00', endTime: '09:00', location: 'Gedung Gereja', recurrenceNote: '', invitationNote: '', serviceDetails: '', notes: '' },
+            { id: 'ws2', name: 'Sekolah Minggu', category: 'routine', dayOfWeek: 'Sunday', date: '', startTime: '09:30', endTime: '10:45', location: 'Ruang Sekolah Minggu', recurrenceNote: '', invitationNote: '', serviceDetails: '', notes: '' },
+            { id: 'ws3', name: 'Ibadah Pemuda Remaja', category: 'routine', dayOfWeek: 'Friday', date: '', startTime: '18:30', endTime: '20:00', location: 'Aula Pemuda', recurrenceNote: '', invitationNote: '', serviceDetails: '', notes: '' },
+            { id: 'ws4', name: 'Ibadah Rumah Tangga', category: 'flexible', dayOfWeek: '', date: '', startTime: '19:00', endTime: '20:30', location: 'Rumah Jemaat', recurrenceNote: 'Jadwal fleksibel, ditentukan per wilayah.', invitationNote: '', serviceDetails: '', notes: '' }
         ];
     },
 
@@ -572,6 +612,7 @@ const AppData = {
     addStructure(entry) {
         const data = this.getData();
         entry.id = this.generateId();
+        entry.periodeJabatan = entry.periodeJabatan || '';
         data.structure = data.structure || [];
         data.structure.push(entry);
         this.saveData(data);
@@ -594,6 +635,39 @@ const AppData = {
     deleteStructure(id) {
         const data = this.getData();
         data.structure = (data.structure || []).filter(s => s.id !== id);
+        this.saveData(data);
+    },
+
+    // Worship schedules
+    getWorshipSchedules() {
+        return this.getData().worshipSchedules || [];
+    },
+
+    addWorshipSchedule(schedule) {
+        const data = this.getData();
+        schedule.id = this.generateId();
+        data.worshipSchedules = data.worshipSchedules || [];
+        data.worshipSchedules.push(schedule);
+        this.saveData(data);
+        this.addActivity('event', 'Jadwal ibadah ditambahkan', `${schedule.name}`);
+        return schedule;
+    },
+
+    updateWorshipSchedule(id, updates) {
+        const data = this.getData();
+        data.worshipSchedules = data.worshipSchedules || [];
+        const index = data.worshipSchedules.findIndex((item) => item.id === id);
+        if (index !== -1) {
+            data.worshipSchedules[index] = { ...data.worshipSchedules[index], ...updates };
+            this.saveData(data);
+            return data.worshipSchedules[index];
+        }
+        return null;
+    },
+
+    deleteWorshipSchedule(id) {
+        const data = this.getData();
+        data.worshipSchedules = (data.worshipSchedules || []).filter((item) => item.id !== id);
         this.saveData(data);
     },
 

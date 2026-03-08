@@ -15,7 +15,10 @@ const App = {
         'commissions-women': { title: 'Komisi Wanita', render: () => Commissions.render('women') },
         attendance: { title: 'Struktur Pengurus', render: () => Attendance.render() },
         finance: { title: 'Keuangan', render: () => Finance.render() },
-        events: { title: 'Acara', render: () => Events.render() }
+        'announcements-schedule': { title: 'Jadwal Ibadah', render: () => WorshipSchedule.render() },
+        'announcements-events': { title: 'Event', render: () => Events.render() },
+        'announcements-church': { title: 'Pengumuman Gereja', render: () => Events.render() },
+        events: { title: 'Event', render: () => Events.render() }
     },
 
     init() {
@@ -99,6 +102,12 @@ const App = {
         group.classList.toggle('open');
     },
 
+    toggleAnnouncementMenu() {
+        const group = document.getElementById('announcementNavGroup');
+        if (!group) return;
+        group.classList.toggle('open');
+    },
+
     loadPage(pageName) {
         const pageConfig = this.pages[pageName];
         if (!pageConfig) return;
@@ -121,6 +130,13 @@ const App = {
             const isCommissionPage = pageName.startsWith('commissions-');
             commissionGroup.classList.toggle('active', isCommissionPage);
             commissionGroup.classList.toggle('open', isCommissionPage);
+        }
+
+        const announcementGroup = document.getElementById('announcementNavGroup');
+        if (announcementGroup) {
+            const isAnnouncementPage = pageName.startsWith('announcements-');
+            announcementGroup.classList.toggle('active', isAnnouncementPage);
+            announcementGroup.classList.toggle('open', isAnnouncementPage);
         }
 
         // Close sidebar on mobile

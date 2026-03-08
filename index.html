@@ -95,16 +95,24 @@
                             <span>Keuangan</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="#" class="nav-item" data-page="events" onclick="App.loadPage('events'); return false;">
+                    <li class="nav-group" id="announcementNavGroup">
+                        <a href="#" class="nav-item nav-group-toggle" onclick="App.toggleAnnouncementMenu(); return false;">
                             <svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
                                 <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                                 <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                                 <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>
-                            <span>Acara</span>
+                            <span>Pengumuman</span>
+                            <svg class="nav-caret" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
                         </a>
+                        <ul class="nav-sublist">
+                            <li><a href="#" class="nav-item nav-subitem" data-page="announcements-schedule" onclick="App.loadPage('announcements-schedule'); return false;"><span>Jadwal Ibadah</span></a></li>
+                            <li><a href="#" class="nav-item nav-subitem" data-page="announcements-events" onclick="App.loadPage('announcements-events'); return false;"><span>Event</span></a></li>
+                            <li><a href="#" class="nav-item nav-subitem" data-page="announcements-church" onclick="App.loadPage('announcements-church'); return false;"><span>Pengumuman Gereja</span></a></li>
+                        </ul>
                     </li>
                 </ul>
             </nav>
@@ -190,6 +198,7 @@
     <script src="js/pages/members.js"></script>
     <script src="js/pages/attendance.js"></script>
     <script src="js/pages/finance.js"></script>
+    <script src="js/pages/worship-schedule.js"></script>
     <script src="js/pages/events.js"></script>
     <script src="js/pages/commissions.js"></script>
     <script src="js/app.js"></script>

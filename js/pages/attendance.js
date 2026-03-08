@@ -31,7 +31,7 @@ const Attendance = {
             <div class="filters" style="margin-bottom: 20px;">
                 <div class="filter-group">
                     <label>Cari:</label>
-                    <input type="text" class="form-input" placeholder="Role atau nama..." value="${this.filters.search}" oninput="Attendance.handleSearch(this.value)">
+                    <input id="structureSearchInput" type="text" class="form-input" placeholder="Role atau nama..." value="${this.filters.search}" oninput="Attendance.handleSearch(this.value)">
                 </div>
             </div>
 
@@ -42,6 +42,7 @@ const Attendance = {
                             <tr>
                                 <th>Role</th>
                                 <th>Nama</th>
+                                <th>Periode Jabatan</th>
                                 <th>Kontak</th>
                                 <th>Catatan</th>
                                 <th>Aksi</th>
@@ -52,6 +53,7 @@ const Attendance = {
                                 <tr>
                                     <td>${entry.role}</td>
                                     <td>${entry.name}</td>
+                                    <td>${entry.periodeJabatan || '-'}</td>
                                     <td>
                                         <div>${entry.phone || '-'}</div>
                                         <div style="color: var(--text-secondary); font-size: 0.86rem;">${entry.email || ''}</div>
@@ -73,7 +75,7 @@ const Attendance = {
                                 </tr>
                             `).join('') : `
                                 <tr>
-                                    <td colspan="5">
+                                    <td colspan="6">
                                         ${Components.emptyState(
                                             '<svg viewBox="0 0 24 24" fill="none"><path d="M12 3L3 8V16L12 21L21 16V8L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 21V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M21 8L12 12L3 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
                                             'Belum Ada Pengurus',
@@ -97,6 +99,7 @@ const Attendance = {
         return this.structure.filter(item =>
             item.role.toLowerCase().includes(q) ||
             item.name.toLowerCase().includes(q) ||
+            (item.periodeJabatan || '').toLowerCase().includes(q) ||
             (item.email || '').toLowerCase().includes(q) ||
             (item.phone || '').includes(q)
         );
@@ -105,6 +108,7 @@ const Attendance = {
     handleSearch(value) {
         this.filters.search = value;
         this.render();
+        Components.preserveInputFocus('structureSearchInput', value);
     },
 
     showAddModal() {
@@ -119,6 +123,10 @@ const Attendance = {
                         <label class="form-label required">Nama</label>
                         <input type="text" class="form-input" name="name" required>
                     </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Periode Jabatan</label>
+                    <input type="text" class="form-input" name="periodeJabatan" placeholder="Contoh: 2025-2029">
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -177,6 +185,10 @@ const Attendance = {
                         <input type="text" class="form-input" name="name" value="${entry.name}" required>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Periode Jabatan</label>
+                    <input type="text" class="form-input" name="periodeJabatan" value="${entry.periodeJabatan || ''}" placeholder="Contoh: 2025-2029">
+                </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Telepon</label>
@@ -214,6 +226,7 @@ const Attendance = {
         AppData.updateStructure(data.id, {
             role: data.role,
             name: data.name,
+            periodeJabatan: data.periodeJabatan,
             phone: data.phone,
             email: data.email,
             notes: data.notes
@@ -254,6 +267,10 @@ const Attendance = {
                     <span>${entry.name}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--background); border-radius: var(--radius);">
+                    <span style="color: var(--text-secondary);">Periode Jabatan</span>
+                    <span>${entry.periodeJabatan || '-'}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 10px; background: var(--background); border-radius: var(--radius);">
                     <span style="color: var(--text-secondary);">Telepon</span>
                     <span>${entry.phone || '-'}</span>
                 </div>
@@ -282,6 +299,7 @@ const Attendance = {
                 <td>${idx + 1}</td>
                 <td>${item.role}</td>
                 <td>${item.name}</td>
+                <td>${item.periodeJabatan || ''}</td>
                 <td>${item.phone || ''}</td>
                 <td>${item.email || ''}</td>
                 <td>${item.notes || ''}</td>
@@ -319,6 +337,7 @@ const Attendance = {
                             <th>No</th>
                             <th>Role</th>
                             <th>Nama</th>
+                            <th>Periode Jabatan</th>
                             <th>Telepon</th>
                             <th>Email</th>
                             <th>Catatan</th>
