@@ -238,6 +238,7 @@ const Finance = {
         const pageTransactions = this.filteredTransactions.slice(startIndex, startIndex + this.itemsPerPage);
 
         const isMobile = window.innerWidth <= 900;
+        const canDelete = Auth.canDelete();
 
         if (isMobile) {
             return pageTransactions.map((tx) => `
@@ -260,7 +261,7 @@ const Finance = {
                             <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
                                 <button class="btn btn-sm btn-secondary" onclick="Finance.showDetailModal('${tx.id}')">Detail</button>
                                 <button class="btn btn-sm btn-secondary" onclick="Finance.showEditModal('${tx.id}')">Edit</button>
-                                <button class="btn btn-sm btn-danger" onclick="Finance.deleteTransaction('${tx.id}')">Hapus</button>
+                                ${canDelete ? `<button class="btn btn-sm btn-danger" onclick="Finance.deleteTransaction('${tx.id}')">Hapus</button>` : ''}
                             </div>
                         </div>
                     </td>
@@ -285,9 +286,11 @@ const Finance = {
                         <button class="action-btn edit" onclick="Finance.showEditModal('${tx.id}')" title="Edit">
                             <svg viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2"/></svg>
                         </button>
-                        <button class="action-btn delete" onclick="Finance.deleteTransaction('${tx.id}')" title="Hapus">
-                            <svg viewBox="0 0 24 24" fill="none"><polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2"/></svg>
-                        </button>
+                        ${canDelete ? `
+                            <button class="action-btn delete" onclick="Finance.deleteTransaction('${tx.id}')" title="Hapus">
+                                <svg viewBox="0 0 24 24" fill="none"><polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2"/></svg>
+                            </button>
+                        ` : ''}
                     </div>
                 </td>
             </tr>
@@ -709,6 +712,10 @@ const Finance = {
     },
 
     deleteTransaction(id) {
+        if (!Auth.canDelete()) {
+            Components.toast('Hanya admin yang dapat menghapus data.', 'warning');
+            return;
+        }
         const tx = this.getTransactionById(id);
         if (!tx) return;
 

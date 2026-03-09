@@ -27,6 +27,15 @@ const Auth = {
         return Boolean(this.getCurrentUser());
     },
 
+    isAdmin() {
+        const user = this.getCurrentUser();
+        return Boolean(user && user.role === 'admin');
+    },
+
+    canDelete() {
+        return this.isAdmin();
+    },
+
     login(username, password) {
         const user = AppData.getUsers().find((item) =>
             item.username === username && item.password === password && item.status === 'active'

@@ -235,6 +235,10 @@ const Users = {
     },
 
     deleteUser(id) {
+        if (!Auth.canDelete()) {
+            Components.toast('Hanya admin yang dapat menghapus data.', 'warning');
+            return;
+        }
         const currentUser = Auth.getCurrentUser();
         if (currentUser && currentUser.id === id) {
             Components.toast('User yang sedang login tidak bisa dihapus.', 'warning');
