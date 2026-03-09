@@ -774,7 +774,7 @@ const AppData = {
 
     // Get events
     getEvents() {
-        return this.getData().events;
+        return this.syncEventStatuses();
     },
 
     // Add event
@@ -805,6 +805,48 @@ const AppData = {
         const data = this.getData();
         data.events = data.events.filter(e => e.id !== id);
         this.saveData(data);
+    },
+
+    // Auto-sync event statuses based on event date and time
+    syncEventStatuses() {
+        const data = this.getData();
+        const events = data.events || [];
+        const now = new Date();
+        let hasChanges = false;
+
+        const parseEventDateTime = (dateStr, timeStr, fallbackTime = '00:00') => {
+            if (!dateStr) return null;
+            const time = (timeStr && timeStr.length >= 5) ? timeStr : fallbackTime;
+            const dt = new Date(`${dateStr}T${time}:00`);
+            return Number.isNaN(dt.getTime()) ? null : dt;
+        };
+
+        data.events = events.map((event) => {
+            const startAt = parseEventDateTime(event.date, event.time, '00:00');
+            const endAt = parseEventDateTime(event.date, event.endTime, event.time || '23:59');
+            if (!startAt || !endAt) return event;
+
+            let nextStatus = event.status;
+            if (now < startAt) {
+                nextStatus = 'upcoming';
+            } else if (now > endAt) {
+                nextStatus = 'completed';
+            } else {
+                nextStatus = 'ongoing';
+            }
+
+            if (nextStatus !== event.status) {
+                hasChanges = true;
+                return { ...event, status: nextStatus };
+            }
+            return event;
+        });
+
+        if (hasChanges) {
+            this.saveData(data);
+        }
+
+        return data.events;
     },
 
     // Get activities
