@@ -64,8 +64,8 @@ const Events = {
                                 <th>Tanggal & Waktu</th>
                                 <th>Lokasi</th>
                                 <th>Kategori</th>
+                                <th>Prioritas</th>
                                 <th>Status</th>
-                                <th>Peserta</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -146,6 +146,18 @@ const Events = {
             completed: 'badge-danger'
         };
 
+        const priorityLabels = {
+            high: 'Tinggi',
+            normal: 'Normal',
+            low: 'Rendah'
+        };
+
+        const priorityClasses = {
+            high: 'badge-danger',
+            normal: 'badge-warning',
+            low: 'badge-info'
+        };
+
         const isMobile = window.innerWidth <= 900;
         
         if (isMobile) {
@@ -158,8 +170,9 @@ const Events = {
                                 <span class="badge ${statusClasses[event.status]}">${statusLabels[event.status]}</span>
                             </div>
                             <div style="font-size: 0.857rem; color: var(--text-secondary); margin-bottom: 8px;">
-                                <div>📅 ${Components.formatDate(event.date)} ${event.time} - ${event.endTime}</div>
+                                <div>📅 ${Components.formatDate(event.date)} ${event.time}${event.endTime ? ` - ${event.endTime}` : ''}</div>
                                 <div>📍 ${event.location}</div>
+                                <div>⚡ Prioritas: ${priorityLabels[event.priority || 'normal']}</div>
                                 <div>👥 ${event.attendees?.length || 0} peserta</div>
                             </div>
                             <div style="display: flex; justify-content: flex-end; gap: 8px;">
@@ -179,12 +192,12 @@ const Events = {
                 <td><strong>${event.name}</strong></td>
                 <td>
                     <div>${Components.formatDate(event.date)}</div>
-                    <div style="font-size: 0.857rem; color: var(--text-secondary);">${event.time} - ${event.endTime}</div>
+                    <div style="font-size: 0.857rem; color: var(--text-secondary);">${event.time}${event.endTime ? ` - ${event.endTime}` : ''}</div>
                 </td>
                 <td>${event.location}</td>
                 <td><span class="badge ${categoryClasses[event.category]}">${categoryLabels[event.category]}</span></td>
+                <td><span class="badge ${priorityClasses[event.priority || 'normal']}">${priorityLabels[event.priority || 'normal']}</span></td>
                 <td><span class="badge ${statusClasses[event.status]}">${statusLabels[event.status]}</span></td>
-                <td>${event.attendees?.length || 0} orang</td>
                 <td>
                     <div class="table-actions">
                         <button class="action-btn view" onclick="Events.viewEvent('${event.id}')" title="Lihat">
@@ -264,9 +277,17 @@ const Events = {
                         <input type="time" class="form-input" name="time" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label required">Waktu Selesai</label>
-                        <input type="time" class="form-input" name="endTime" required>
+                        <label class="form-label">Waktu Selesai</label>
+                        <input type="time" class="form-input" name="endTime">
                     </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prioritas</label>
+                    <select class="form-select" name="priority">
+                        <option value="high">Tinggi</option>
+                        <option value="normal" selected>Normal</option>
+                        <option value="low">Rendah</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label required">Lokasi</label>
@@ -328,9 +349,17 @@ const Events = {
                         <input type="time" class="form-input" name="time" value="${event.time}" required>
                     </div>
                     <div class="form-group">
-                        <label class="form-label required">Waktu Selesai</label>
-                        <input type="time" class="form-input" name="endTime" value="${event.endTime}" required>
+                        <label class="form-label">Waktu Selesai</label>
+                        <input type="time" class="form-input" name="endTime" value="${event.endTime || ''}">
                     </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Prioritas</label>
+                    <select class="form-select" name="priority">
+                        <option value="high" ${event.priority === 'high' ? 'selected' : ''}>Tinggi</option>
+                        <option value="normal" ${!event.priority || event.priority === 'normal' ? 'selected' : ''}>Normal</option>
+                        <option value="low" ${event.priority === 'low' ? 'selected' : ''}>Rendah</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label class="form-label required">Lokasi</label>
@@ -363,13 +392,6 @@ const Events = {
         const event = this.events.find(e => e.id === id);
         if (!event) return;
 
-        const members = AppData.getMembers();
-        const attendees = event.attendees || [];
-        const attendeeNames = attendees.map(aid => {
-            const member = members.find(m => m.id === aid);
-            return member ? member.name : '';
-        }).filter(n => n);
-
         const categoryLabels = {
             service: 'Ibadah',
             fellowship: 'Persekutuan',
@@ -382,6 +404,12 @@ const Events = {
             upcoming: 'Akan Datang',
             ongoing: 'Sedang Berlangsung',
             completed: 'Selesai'
+        };
+
+        const priorityLabels = {
+            high: 'Tinggi',
+            normal: 'Normal',
+            low: 'Rendah'
         };
 
         const bodyHtml = `
@@ -398,30 +426,20 @@ const Events = {
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--background); border-radius: var(--radius);">
                     <span style="color: var(--text-secondary);">Waktu</span>
-                    <span>${event.time} - ${event.endTime}</span>
+                    <span>${event.time}${event.endTime ? ` - ${event.endTime}` : ''}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--background); border-radius: var(--radius);">
                     <span style="color: var(--text-secondary);">Lokasi</span>
                     <span>${event.location}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 12px; background: var(--background); border-radius: var(--radius);">
-                    <span style="color: var(--text-secondary);">Jumlah Peserta</span>
-                    <span>${attendees.length} orang</span>
+                    <span style="color: var(--text-secondary);">Prioritas</span>
+                    <span>${priorityLabels[event.priority || 'normal']}</span>
                 </div>
                 ${event.description ? `
                 <div style="padding: 12px; background: var(--background); border-radius: var(--radius);">
                     <span style="color: var(--text-secondary); display: block; margin-bottom: 4px;">Deskripsi</span>
                     <span>${event.description}</span>
-                </div>
-                ` : ''}
-                ${attendeeNames.length > 0 ? `
-                <div style="padding: 12px; background: var(--background); border-radius: var(--radius);">
-                    <span style="color: var(--text-secondary); display: block; margin-bottom: 8px;">Daftar Peserta:</span>
-                    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        ${attendeeNames.map(name => `
-                            <span class="badge badge-info">${name}</span>
-                        `).join('')}
-                    </div>
                 </div>
                 ` : ''}
             </div>
@@ -441,7 +459,8 @@ const Events = {
             `*${(event.name || 'EVENT').toUpperCase()}*`,
             `Tanggal: ${Components.formatDate(event.date)}`,
             `Waktu: ${event.time || '-'}${event.endTime ? ` - ${event.endTime}` : ''}`,
-            `Lokasi: ${event.location || '-'}`
+            `Lokasi: ${event.location || '-'}`,
+            `Prioritas: ${event.priority === 'high' ? 'Tinggi' : event.priority === 'low' ? 'Rendah' : 'Normal'}`
         ];
 
         if (event.description) {
@@ -467,9 +486,13 @@ const Events = {
         const data = Object.fromEntries(formData.entries());
         
         // Validation
-        if (!data.name || !data.date || !data.time || !data.endTime || !data.location || !data.category) {
-            Components.toast('Mohon lengkapi data yang wajib diisi', 'error');
+        if (!data.name || !data.date || !data.time || !data.location || !data.category) {
+            Components.toast('Mohon lengkapi data wajib: nama, tanggal, waktu mulai, lokasi, kategori', 'error');
             return;
+        }
+
+        if (!data.priority) {
+            data.priority = 'normal';
         }
 
         const id = data.id;

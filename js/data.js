@@ -50,6 +50,19 @@ const AppData = {
                 this.saveData(data);
             }
         }
+        if (Array.isArray(data.events)) {
+            let hasEventUpdate = false;
+            data.events = data.events.map((item) => {
+                if (item && typeof item === 'object' && item.priority === undefined) {
+                    hasEventUpdate = true;
+                    return { ...item, priority: 'normal' };
+                }
+                return item;
+            });
+            if (hasEventUpdate) {
+                this.saveData(data);
+            }
+        }
 
         return data;
     },
@@ -332,6 +345,7 @@ const AppData = {
                     endTime: '09:00',
                     location: 'Main Hall',
                     category: 'service',
+                    priority: 'high',
                     status: 'upcoming',
                     description: 'Weekly Sunday worship service',
                     attendees: ['1', '2', '3', '4', '6', '7']
@@ -344,6 +358,7 @@ const AppData = {
                     endTime: '20:00',
                     location: 'Youth Room',
                     category: 'fellowship',
+                    priority: 'normal',
                     status: 'upcoming',
                     description: 'Weekly youth gathering',
                     attendees: ['4', '7', '8']
@@ -356,6 +371,7 @@ const AppData = {
                     endTime: '21:00',
                     location: 'Main Hall',
                     category: 'practice',
+                    priority: 'low',
                     status: 'upcoming',
                     description: 'Weekly worship practice',
                     attendees: ['1', '2', '6']
@@ -368,6 +384,7 @@ const AppData = {
                     endTime: '12:00',
                     location: 'Church Ground',
                     category: 'celebration',
+                    priority: 'high',
                     status: 'upcoming',
                     description: 'Easter sunrise service and celebration',
                     attendees: []
@@ -380,6 +397,7 @@ const AppData = {
                     endTime: '21:00',
                     location: 'Fellowship Hall',
                     category: 'study',
+                    priority: 'normal',
                     status: 'completed',
                     description: 'Weekly Bible study session',
                     attendees: ['1', '3', '5']
