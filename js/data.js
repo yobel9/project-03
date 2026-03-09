@@ -63,6 +63,34 @@ const AppData = {
                 this.saveData(data);
             }
         }
+        if (!Array.isArray(data.churchAnnouncements)) {
+            data.churchAnnouncements = this.getDefaultChurchAnnouncements();
+            this.saveData(data);
+        }
+        if (Array.isArray(data.churchAnnouncements)) {
+            let hasAnnouncementUpdate = false;
+            data.churchAnnouncements = data.churchAnnouncements.map((item) => {
+                if (!item || typeof item !== 'object') return item;
+
+                let nextItem = item;
+                if (item.status === undefined) {
+                    hasAnnouncementUpdate = true;
+                    nextItem = { ...nextItem, status: 'draft' };
+                }
+                if (nextItem.type === 'service') {
+                    hasAnnouncementUpdate = true;
+                    nextItem = { ...nextItem, type: 'general' };
+                }
+                if (nextItem.type === 'youth' || nextItem.type === 'family') {
+                    hasAnnouncementUpdate = true;
+                    nextItem = { ...nextItem, type: 'other' };
+                }
+                return nextItem;
+            });
+            if (hasAnnouncementUpdate) {
+                this.saveData(data);
+            }
+        }
 
         return data;
     },
@@ -336,6 +364,7 @@ const AppData = {
             ],
             structure: this.getDefaultStructure(),
             worshipSchedules: this.getDefaultWorshipSchedules(),
+            churchAnnouncements: this.getDefaultChurchAnnouncements(),
             events: [
                 {
                     id: '1',
@@ -460,6 +489,27 @@ const AppData = {
             { id: 'ws2', name: 'Sekolah Minggu', category: 'routine', dayOfWeek: 'Sunday', date: '', startTime: '09:30', endTime: '10:45', location: 'Ruang Sekolah Minggu', recurrenceNote: '', invitationNote: '', serviceDetails: '', notes: '' },
             { id: 'ws3', name: 'Ibadah Pemuda Remaja', category: 'routine', dayOfWeek: 'Friday', date: '', startTime: '18:30', endTime: '20:00', location: 'Aula Pemuda', recurrenceNote: '', invitationNote: '', serviceDetails: '', notes: '' },
             { id: 'ws4', name: 'Ibadah Rumah Tangga', category: 'flexible', dayOfWeek: '', date: '', startTime: '19:00', endTime: '20:30', location: 'Rumah Jemaat', recurrenceNote: 'Jadwal fleksibel, ditentukan per wilayah.', invitationNote: '', serviceDetails: '', notes: '' }
+        ];
+    },
+
+    getDefaultChurchAnnouncements() {
+        return [
+            {
+                id: 'ca1',
+                title: 'Doa Puasa Bersama',
+                date: '2026-03-15',
+                type: 'general',
+                status: 'published',
+                content: 'Seluruh jemaat diundang mengikuti doa puasa bersama di gedung gereja pukul 18.00 WITA.'
+            },
+            {
+                id: 'ca2',
+                title: 'Pendaftaran Baptisan',
+                date: '2026-03-20',
+                type: 'general',
+                status: 'draft',
+                content: 'Pendaftaran kelas katekisasi dan baptisan dibuka sampai tanggal 5 April 2026.'
+            }
         ];
     },
 
@@ -686,6 +736,39 @@ const AppData = {
     deleteWorshipSchedule(id) {
         const data = this.getData();
         data.worshipSchedules = (data.worshipSchedules || []).filter((item) => item.id !== id);
+        this.saveData(data);
+    },
+
+    // Church announcements
+    getChurchAnnouncements() {
+        return this.getData().churchAnnouncements || [];
+    },
+
+    addChurchAnnouncement(announcement) {
+        const data = this.getData();
+        announcement.id = this.generateId();
+        data.churchAnnouncements = data.churchAnnouncements || [];
+        data.churchAnnouncements.push(announcement);
+        this.saveData(data);
+        this.addActivity('event', 'Pengumuman ditambahkan', announcement.title);
+        return announcement;
+    },
+
+    updateChurchAnnouncement(id, updates) {
+        const data = this.getData();
+        data.churchAnnouncements = data.churchAnnouncements || [];
+        const index = data.churchAnnouncements.findIndex((item) => item.id === id);
+        if (index !== -1) {
+            data.churchAnnouncements[index] = { ...data.churchAnnouncements[index], ...updates };
+            this.saveData(data);
+            return data.churchAnnouncements[index];
+        }
+        return null;
+    },
+
+    deleteChurchAnnouncement(id) {
+        const data = this.getData();
+        data.churchAnnouncements = (data.churchAnnouncements || []).filter((item) => item.id !== id);
         this.saveData(data);
     },
 

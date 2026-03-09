@@ -623,6 +623,15 @@ body.sidebar-minimized .sidebar-minimize svg {
     line-height: 1.2;
 }
 
+.dashboard-balance-value {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.dashboard-balance-value.masked {
+    opacity: 0.72;
+    transform: translateY(1px);
+}
+
 .stat-change {
     font-size: 0.786rem;
     margin-top: 4px;
@@ -1285,6 +1294,10 @@ body.sidebar-minimized .sidebar-minimize svg {
     gap: 24px;
 }
 
+.dashboard-grid.split-grid {
+    grid-template-columns: 1fr 1fr;
+}
+
 @media (max-width: 1024px) {
     .dashboard-grid {
         grid-template-columns: 1fr;
@@ -1387,6 +1400,18 @@ body.sidebar-minimized .sidebar-minimize svg {
     font-size: 1.286rem;
     font-weight: 700;
     line-height: 1;
+}
+
+.birthday-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+@media (max-width: 900px) {
+    .birthday-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .event-date .month {

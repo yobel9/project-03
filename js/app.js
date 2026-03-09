@@ -17,7 +17,7 @@ const App = {
         finance: { title: 'Keuangan', render: () => Finance.render() },
         'announcements-schedule': { title: 'Jadwal Ibadah', render: () => WorshipSchedule.render() },
         'announcements-events': { title: 'Event', render: () => Events.render() },
-        'announcements-church': { title: 'Pengumuman Gereja', render: () => Events.render() },
+        'announcements-church': { title: 'Pengumuman Gereja', render: () => ChurchAnnouncements.render() },
         events: { title: 'Event', render: () => Events.render() }
     },
 
