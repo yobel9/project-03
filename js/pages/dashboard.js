@@ -239,6 +239,10 @@ const Dashboard = {
                         <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                         Kelola Event
                     </button>
+                    <button class="btn btn-secondary" onclick="App.navigateTo('announcements-church')">
+                        <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M4 4H20V20H4V4Z" stroke="currentColor" stroke-width="2"/><path d="M8 8H16" stroke="currentColor" stroke-width="2"/><path d="M8 12H16" stroke="currentColor" stroke-width="2"/><path d="M8 16H13" stroke="currentColor" stroke-width="2"/></svg>
+                        Pengumuman Gereja
+                    </button>
                 </div>
             </div>
         `;
