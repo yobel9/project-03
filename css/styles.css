@@ -1302,6 +1302,10 @@ body.sidebar-minimized .sidebar-minimize svg {
     .dashboard-grid {
         grid-template-columns: 1fr;
     }
+
+    .dashboard-grid.split-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .activity-list {
@@ -1352,10 +1356,12 @@ body.sidebar-minimized .sidebar-minimize svg {
 
 .activity-content {
     flex: 1;
+    min-width: 0;
 }
 
 .activity-text {
     margin-bottom: 4px;
+    overflow-wrap: anywhere;
 }
 
 .activity-time {
@@ -1422,11 +1428,13 @@ body.sidebar-minimized .sidebar-minimize svg {
 
 .event-info {
     flex: 1;
+    min-width: 0;
 }
 
 .event-name {
     font-weight: 600;
     margin-bottom: 4px;
+    overflow-wrap: anywhere;
 }
 
 .event-meta {
@@ -1434,12 +1442,16 @@ body.sidebar-minimized .sidebar-minimize svg {
     color: var(--text-secondary);
     display: flex;
     gap: 12px;
+    flex-wrap: wrap;
+    row-gap: 8px;
 }
 
 .event-meta span {
     display: flex;
     align-items: center;
     gap: 4px;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .event-meta svg {
@@ -1875,6 +1887,38 @@ body.sidebar-minimized .sidebar-minimize svg {
 }
 
 @media (max-width: 768px) {
+    .card-header {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .event-card {
+        gap: 12px;
+        padding: 12px;
+        min-width: 0;
+    }
+
+    .event-date {
+        width: 50px;
+        height: 50px;
+    }
+
+    .event-date .day {
+        font-size: 1.1rem;
+    }
+
+    .event-date .month {
+        font-size: 0.65rem;
+    }
+
+    .event-meta {
+        gap: 8px;
+    }
+
+    .dashboard-grid.split-grid {
+        grid-template-columns: 1fr;
+    }
+
     .sidebar-minimize {
         display: none;
     }
