@@ -5,6 +5,8 @@
 const Inventory = {
     items: [],
     filteredItems: [],
+    maxImageSizeMB: 4,
+    maxImageDimension: 960,
     filters: {
         search: '',
         category: '',
@@ -133,7 +135,10 @@ const Inventory = {
                     <td colspan="6" style="padding: 0;">
                         <div style="padding: 16px; border-bottom: 1px solid var(--border);">
                             <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
-                                <div style="font-weight: 600;">${item.name}</div>
+                                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                    ${this.getPhotoPreviewHtml(item.photo, item.name, 42)}
+                                    <div style="font-weight: 600; overflow-wrap: anywhere;">${item.name}</div>
+                                </div>
                                 <span class="badge ${this.conditionClasses[item.condition] || 'badge-info'}">${this.conditionLabels[item.condition] || '-'}</span>
                             </div>
                             <div style="font-size: 0.857rem; color: var(--text-secondary); margin-bottom: 8px;">
@@ -154,7 +159,12 @@ const Inventory = {
 
         return this.filteredItems.map((item) => `
             <tr>
-                <td><strong>${item.name}</strong></td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        ${this.getPhotoPreviewHtml(item.photo, item.name, 36)}
+                        <strong>${item.name}</strong>
+                    </div>
+                </td>
                 <td>${this.categoryLabels[item.category] || '-'}</td>
                 <td>${item.quantity || 0} ${item.unit || 'unit'}</td>
                 <td><span class="badge ${this.conditionClasses[item.condition] || 'badge-info'}">${this.conditionLabels[item.condition] || '-'}</span></td>
@@ -195,10 +205,18 @@ const Inventory = {
         this.render();
     },
 
+    getPhotoPreviewHtml(photo, name, size = 48) {
+        if (photo) {
+            return `<img src="${photo}" alt="${name || 'Foto barang'}" style="width:${size}px;height:${size}px;border-radius:8px;object-fit:cover;border:1px solid var(--border);">`;
+        }
+        return `<div style="width:${size}px;height:${size}px;border-radius:8px;background:var(--background);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:0.75rem;">No Img</div>`;
+    },
+
     getFormHtml(item = {}) {
         return `
             <form id="inventoryForm">
                 <input type="hidden" name="id" value="${item.id || ''}">
+                <input type="hidden" name="photo" id="inventoryPhotoData" value="${item.photo || ''}">
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label required">Nama Barang</label>
@@ -254,8 +272,86 @@ const Inventory = {
                     <label class="form-label">Catatan</label>
                     <textarea class="form-textarea" name="notes" rows="3">${item.notes || ''}</textarea>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Foto Barang</label>
+                    <input type="file" class="form-input" accept="image/*" onchange="Inventory.handlePhotoUpload(event)">
+                    <small style="display:block;color:var(--text-secondary);margin-top:6px;">Maksimal ${this.maxImageSizeMB}MB. Foto akan dikompres otomatis.</small>
+                    <div style="margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <div id="inventoryPhotoPreviewWrap">
+                            ${this.getPhotoPreviewHtml(item.photo, item.name || 'Foto barang', 78)}
+                        </div>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="Inventory.clearPhoto()">Hapus Foto</button>
+                    </div>
+                </div>
             </form>
         `;
+    },
+
+    async handlePhotoUpload(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            Components.toast('File harus berupa gambar.', 'error');
+            event.target.value = '';
+            return;
+        }
+
+        if (file.size > this.maxImageSizeMB * 1024 * 1024) {
+            Components.toast(`Ukuran foto maksimal ${this.maxImageSizeMB}MB.`, 'error');
+            event.target.value = '';
+            return;
+        }
+
+        try {
+            const dataUrl = await this.compressImage(file);
+            const photoInput = document.getElementById('inventoryPhotoData');
+            const previewWrap = document.getElementById('inventoryPhotoPreviewWrap');
+            if (photoInput) photoInput.value = dataUrl;
+            if (previewWrap) previewWrap.innerHTML = this.getPhotoPreviewHtml(dataUrl, 'Foto barang', 78);
+        } catch (error) {
+            Components.toast('Gagal memproses foto.', 'error');
+        }
+    },
+
+    clearPhoto() {
+        const photoInput = document.getElementById('inventoryPhotoData');
+        const previewWrap = document.getElementById('inventoryPhotoPreviewWrap');
+        if (photoInput) photoInput.value = '';
+        if (previewWrap) previewWrap.innerHTML = this.getPhotoPreviewHtml('', 'Foto barang', 78);
+    },
+
+    compressImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const img = new Image();
+                img.onload = () => {
+                    let { width, height } = img;
+                    const maxDim = this.maxImageDimension;
+                    if (width > maxDim || height > maxDim) {
+                        const scale = Math.min(maxDim / width, maxDim / height);
+                        width = Math.round(width * scale);
+                        height = Math.round(height * scale);
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) {
+                        reject(new Error('Canvas not available'));
+                        return;
+                    }
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.8));
+                };
+                img.onerror = () => reject(new Error('Invalid image'));
+                img.src = reader.result;
+            };
+            reader.onerror = () => reject(new Error('Read failed'));
+            reader.readAsDataURL(file);
+        });
     },
 
     showAddModal() {
@@ -300,6 +396,7 @@ const Inventory = {
             location: formData.location.trim(),
             acquiredDate: formData.acquiredDate || '',
             value: formData.value ? parseInt(formData.value, 10) : 0,
+            photo: formData.photo || '',
             notes: (formData.notes || '').trim()
         };
 
@@ -322,6 +419,7 @@ const Inventory = {
         const valueText = item.value ? `Rp ${new Intl.NumberFormat('id-ID').format(item.value)}` : '-';
         const bodyHtml = `
             <div style="display: grid; gap: 10px;">
+                <div><strong>Foto Barang:</strong><br><div style="margin-top:8px;">${this.getPhotoPreviewHtml(item.photo, item.name || 'Foto barang', 120)}</div></div>
                 <div><strong>Nama Barang:</strong><br>${item.name || '-'}</div>
                 <div><strong>Kategori:</strong><br>${this.categoryLabels[item.category] || '-'}</div>
                 <div><strong>Jumlah:</strong><br>${item.quantity || 0} ${item.unit || 'unit'}</div>

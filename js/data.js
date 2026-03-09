@@ -116,6 +116,10 @@ const AppData = {
                     nextItem.category = 'other';
                     hasInventoryUpdate = true;
                 }
+                if (nextItem.photo === undefined) {
+                    nextItem.photo = '';
+                    hasInventoryUpdate = true;
+                }
                 return nextItem;
             });
             if (hasInventoryUpdate) {
@@ -557,6 +561,7 @@ const AppData = {
                 location: 'Ruang Musik',
                 acquiredDate: '2025-06-10',
                 value: 8500000,
+                photo: '',
                 notes: 'Digunakan untuk ibadah raya'
             },
             {
@@ -569,6 +574,7 @@ const AppData = {
                 location: 'Gudang Gereja',
                 acquiredDate: '2024-01-15',
                 value: 5400000,
+                photo: '',
                 notes: 'Sebagian perlu perbaikan kaki kursi'
             },
             {
@@ -581,6 +587,7 @@ const AppData = {
                 location: 'Booth Operator',
                 acquiredDate: '2025-11-20',
                 value: 3200000,
+                photo: '',
                 notes: ''
             }
         ];
@@ -855,6 +862,7 @@ const AppData = {
         item.id = this.generateId();
         item.quantity = parseInt(item.quantity, 10) || 0;
         item.value = item.value ? parseInt(item.value, 10) : 0;
+        item.photo = item.photo || '';
         data.inventory = data.inventory || [];
         data.inventory.push(item);
         this.saveData(data);
