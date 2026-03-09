@@ -1,0 +1,357 @@
+// ============================================
+// Church Admin - Inventory Page
+// ============================================
+
+const Inventory = {
+    items: [],
+    filteredItems: [],
+    filters: {
+        search: '',
+        category: '',
+        condition: ''
+    },
+
+    categoryLabels: {
+        electronic: 'Elektronik',
+        furniture: 'Furniture',
+        music: 'Alat Musik',
+        worship: 'Perlengkapan Ibadah',
+        other: 'Lainnya'
+    },
+
+    conditionLabels: {
+        good: 'Baik',
+        minor_damage: 'Rusak Ringan',
+        damaged: 'Rusak'
+    },
+
+    conditionClasses: {
+        good: 'badge-success',
+        minor_damage: 'badge-warning',
+        damaged: 'badge-danger'
+    },
+
+    render() {
+        this.items = AppData.getInventoryItems();
+        this.applyFilters();
+
+        const isMobile = window.innerWidth <= 900;
+        const content = document.getElementById('content');
+        content.innerHTML = `
+            <div class="page-header">
+                <h1 class="page-title">Inventaris Gereja</h1>
+                <button class="btn btn-primary" onclick="Inventory.showAddModal()">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    Tambah Barang
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="filters">
+                    <div class="filter-group">
+                        <label>Cari:</label>
+                        <input id="inventorySearchInput" type="text" class="form-input" placeholder="Nama barang atau lokasi..." value="${this.filters.search}" oninput="Inventory.handleSearch(this.value)">
+                    </div>
+                    <div class="filter-group">
+                        <label>Kategori:</label>
+                        <select class="form-select" onchange="Inventory.handleCategoryFilter(this.value)">
+                            <option value="">Semua</option>
+                            <option value="electronic" ${this.filters.category === 'electronic' ? 'selected' : ''}>Elektronik</option>
+                            <option value="furniture" ${this.filters.category === 'furniture' ? 'selected' : ''}>Furniture</option>
+                            <option value="music" ${this.filters.category === 'music' ? 'selected' : ''}>Alat Musik</option>
+                            <option value="worship" ${this.filters.category === 'worship' ? 'selected' : ''}>Perlengkapan Ibadah</option>
+                            <option value="other" ${this.filters.category === 'other' ? 'selected' : ''}>Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Kondisi:</label>
+                        <select class="form-select" onchange="Inventory.handleConditionFilter(this.value)">
+                            <option value="">Semua</option>
+                            <option value="good" ${this.filters.condition === 'good' ? 'selected' : ''}>Baik</option>
+                            <option value="minor_damage" ${this.filters.condition === 'minor_damage' ? 'selected' : ''}>Rusak Ringan</option>
+                            <option value="damaged" ${this.filters.condition === 'damaged' ? 'selected' : ''}>Rusak</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="table events-table">
+                        ${!isMobile ? `
+                            <thead>
+                                <tr>
+                                    <th>Nama Barang</th>
+                                    <th>Kategori</th>
+                                    <th>Jumlah</th>
+                                    <th>Kondisi</th>
+                                    <th>Lokasi</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                        ` : ''}
+                        <tbody>
+                            ${this.renderRows(isMobile)}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    },
+
+    applyFilters() {
+        const q = this.filters.search.toLowerCase();
+        this.filteredItems = this.items.filter((item) => {
+            const matchSearch = !q
+                || (item.name || '').toLowerCase().includes(q)
+                || (item.location || '').toLowerCase().includes(q)
+                || (item.notes || '').toLowerCase().includes(q);
+            const matchCategory = !this.filters.category || item.category === this.filters.category;
+            const matchCondition = !this.filters.condition || item.condition === this.filters.condition;
+            return matchSearch && matchCategory && matchCondition;
+        });
+    },
+
+    renderRows(isMobile) {
+        if (!this.filteredItems.length) {
+            return `
+                <tr>
+                    <td colspan="6">
+                        ${Components.emptyState(
+                            '<svg viewBox="0 0 24 24" fill="none"><path d="M3 7L12 2L21 7V17L12 22L3 17V7Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M3 7L12 12L21 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 12V22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+                            'Belum Ada Data Inventaris',
+                            'Tambahkan data inventaris gereja untuk memudahkan pendataan aset.',
+                            'Tambah Barang',
+                            'Inventory.showAddModal()'
+                        )}
+                    </td>
+                </tr>
+            `;
+        }
+
+        if (isMobile) {
+            return this.filteredItems.map((item) => `
+                <tr>
+                    <td colspan="6" style="padding: 0;">
+                        <div style="padding: 16px; border-bottom: 1px solid var(--border);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
+                                <div style="font-weight: 600;">${item.name}</div>
+                                <span class="badge ${this.conditionClasses[item.condition] || 'badge-info'}">${this.conditionLabels[item.condition] || '-'}</span>
+                            </div>
+                            <div style="font-size: 0.857rem; color: var(--text-secondary); margin-bottom: 8px;">
+                                <div>📦 ${this.categoryLabels[item.category] || '-'}</div>
+                                <div>🔢 ${item.quantity || 0} ${item.unit || 'unit'}</div>
+                                <div>📍 ${item.location || '-'}</div>
+                            </div>
+                            <div style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
+                                <button class="btn btn-sm btn-secondary" onclick="Inventory.showDetailModal('${item.id}')">Lihat</button>
+                                <button class="btn btn-sm btn-primary" onclick="Inventory.showEditModal('${item.id}')">Edit</button>
+                                <button class="btn btn-sm btn-danger" onclick="Inventory.deleteItem('${item.id}')">Hapus</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        return this.filteredItems.map((item) => `
+            <tr>
+                <td><strong>${item.name}</strong></td>
+                <td>${this.categoryLabels[item.category] || '-'}</td>
+                <td>${item.quantity || 0} ${item.unit || 'unit'}</td>
+                <td><span class="badge ${this.conditionClasses[item.condition] || 'badge-info'}">${this.conditionLabels[item.condition] || '-'}</span></td>
+                <td>${item.location || '-'}</td>
+                <td>
+                    <div class="table-actions">
+                        <button class="action-btn view" onclick="Inventory.showDetailModal('${item.id}')" title="Detail">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M1 12S5 4 12 4s11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
+                        </button>
+                        <button class="action-btn edit" onclick="Inventory.showEditModal('${item.id}')" title="Edit">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2"/></svg>
+                        </button>
+                        <button class="action-btn delete" onclick="Inventory.deleteItem('${item.id}')" title="Hapus">
+                            <svg viewBox="0 0 24 24" fill="none"><polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="2"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2"/></svg>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    },
+
+    handleSearch(value) {
+        this.filters.search = value;
+        this.applyFilters();
+        this.render();
+        Components.preserveInputFocus('inventorySearchInput', value);
+    },
+
+    handleCategoryFilter(value) {
+        this.filters.category = value;
+        this.applyFilters();
+        this.render();
+    },
+
+    handleConditionFilter(value) {
+        this.filters.condition = value;
+        this.applyFilters();
+        this.render();
+    },
+
+    getFormHtml(item = {}) {
+        return `
+            <form id="inventoryForm">
+                <input type="hidden" name="id" value="${item.id || ''}">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">Nama Barang</label>
+                        <input type="text" class="form-input" name="name" value="${item.name || ''}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Kategori</label>
+                        <select class="form-select" name="category" required>
+                            <option value="">Pilih...</option>
+                            <option value="electronic" ${item.category === 'electronic' ? 'selected' : ''}>Elektronik</option>
+                            <option value="furniture" ${item.category === 'furniture' ? 'selected' : ''}>Furniture</option>
+                            <option value="music" ${item.category === 'music' ? 'selected' : ''}>Alat Musik</option>
+                            <option value="worship" ${item.category === 'worship' ? 'selected' : ''}>Perlengkapan Ibadah</option>
+                            <option value="other" ${item.category === 'other' ? 'selected' : ''}>Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">Jumlah</label>
+                        <input type="number" class="form-input" name="quantity" min="0" value="${item.quantity ?? 1}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Satuan</label>
+                        <input type="text" class="form-input" name="unit" value="${item.unit || 'unit'}" placeholder="Contoh: unit, buah, set">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label required">Kondisi</label>
+                        <select class="form-select" name="condition" required>
+                            <option value="good" ${!item.condition || item.condition === 'good' ? 'selected' : ''}>Baik</option>
+                            <option value="minor_damage" ${item.condition === 'minor_damage' ? 'selected' : ''}>Rusak Ringan</option>
+                            <option value="damaged" ${item.condition === 'damaged' ? 'selected' : ''}>Rusak</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label required">Lokasi</label>
+                        <input type="text" class="form-input" name="location" value="${item.location || ''}" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Tanggal Perolehan</label>
+                        <input type="date" class="form-input" name="acquiredDate" value="${item.acquiredDate || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nilai (Rp)</label>
+                        <input type="number" class="form-input" name="value" min="0" value="${item.value || ''}">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Catatan</label>
+                    <textarea class="form-textarea" name="notes" rows="3">${item.notes || ''}</textarea>
+                </div>
+            </form>
+        `;
+    },
+
+    showAddModal() {
+        const footerHtml = `
+            <button class="btn btn-secondary" onclick="Components.closeModal()">Batal</button>
+            <button class="btn btn-primary" onclick="Inventory.saveItem()">Simpan</button>
+        `;
+        Components.modal('Tambah Inventaris', this.getFormHtml(), footerHtml);
+    },
+
+    showEditModal(id) {
+        const item = this.items.find((entry) => entry.id === id);
+        if (!item) return;
+
+        const footerHtml = `
+            <button class="btn btn-secondary" onclick="Components.closeModal()">Batal</button>
+            <button class="btn btn-primary" onclick="Inventory.saveItem()">Simpan Perubahan</button>
+        `;
+        Components.modal('Edit Inventaris', this.getFormHtml(item), footerHtml);
+    },
+
+    saveItem() {
+        const form = document.getElementById('inventoryForm');
+        const formData = Object.fromEntries(new FormData(form).entries());
+
+        if (!formData.name || !formData.category || !formData.location || !formData.condition) {
+            Components.toast('Field wajib belum lengkap.', 'error');
+            return;
+        }
+
+        if (formData.quantity === '' || Number(formData.quantity) < 0) {
+            Components.toast('Jumlah barang tidak valid.', 'error');
+            return;
+        }
+
+        const payload = {
+            name: formData.name.trim(),
+            category: formData.category,
+            quantity: parseInt(formData.quantity, 10) || 0,
+            unit: (formData.unit || 'unit').trim() || 'unit',
+            condition: formData.condition,
+            location: formData.location.trim(),
+            acquiredDate: formData.acquiredDate || '',
+            value: formData.value ? parseInt(formData.value, 10) : 0,
+            notes: (formData.notes || '').trim()
+        };
+
+        if (formData.id) {
+            AppData.updateInventoryItem(formData.id, payload);
+            Components.toast('Data inventaris berhasil diperbarui', 'success');
+        } else {
+            AppData.addInventoryItem(payload);
+            Components.toast('Data inventaris berhasil ditambahkan', 'success');
+        }
+
+        Components.closeModal();
+        this.render();
+    },
+
+    showDetailModal(id) {
+        const item = this.items.find((entry) => entry.id === id);
+        if (!item) return;
+
+        const valueText = item.value ? `Rp ${new Intl.NumberFormat('id-ID').format(item.value)}` : '-';
+        const bodyHtml = `
+            <div style="display: grid; gap: 10px;">
+                <div><strong>Nama Barang:</strong><br>${item.name || '-'}</div>
+                <div><strong>Kategori:</strong><br>${this.categoryLabels[item.category] || '-'}</div>
+                <div><strong>Jumlah:</strong><br>${item.quantity || 0} ${item.unit || 'unit'}</div>
+                <div><strong>Kondisi:</strong><br>${this.conditionLabels[item.condition] || '-'}</div>
+                <div><strong>Lokasi:</strong><br>${item.location || '-'}</div>
+                <div><strong>Tanggal Perolehan:</strong><br>${item.acquiredDate ? Components.formatDate(item.acquiredDate) : '-'}</div>
+                <div><strong>Nilai:</strong><br>${valueText}</div>
+                <div><strong>Catatan:</strong><br>${item.notes || '-'}</div>
+            </div>
+        `;
+
+        const footerHtml = `
+            <button class="btn btn-secondary" onclick="Components.closeModal()">Tutup</button>
+            <button class="btn btn-primary" onclick="Components.closeModal(); Inventory.showEditModal('${item.id}')">Edit</button>
+        `;
+        Components.modal('Detail Inventaris', bodyHtml, footerHtml);
+    },
+
+    deleteItem(id) {
+        const item = this.items.find((entry) => entry.id === id);
+        if (!item) return;
+
+        Components.confirm(
+            'Hapus Inventaris',
+            `Apakah Anda yakin ingin menghapus ${item.name}?`,
+            () => {
+                AppData.deleteInventoryItem(id);
+                Components.toast('Inventaris berhasil dihapus', 'success');
+                this.render();
+            }
+        );
+    }
+};

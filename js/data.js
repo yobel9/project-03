@@ -91,6 +91,37 @@ const AppData = {
                 this.saveData(data);
             }
         }
+        if (!Array.isArray(data.inventory)) {
+            data.inventory = this.getDefaultInventory();
+            this.saveData(data);
+        }
+        if (Array.isArray(data.inventory)) {
+            let hasInventoryUpdate = false;
+            data.inventory = data.inventory.map((item) => {
+                if (!item || typeof item !== 'object') return item;
+                const nextItem = { ...item };
+                if (nextItem.unit === undefined) {
+                    nextItem.unit = 'unit';
+                    hasInventoryUpdate = true;
+                }
+                if (nextItem.condition === undefined) {
+                    nextItem.condition = 'good';
+                    hasInventoryUpdate = true;
+                }
+                if (nextItem.quantity === undefined) {
+                    nextItem.quantity = 0;
+                    hasInventoryUpdate = true;
+                }
+                if (nextItem.category === undefined) {
+                    nextItem.category = 'other';
+                    hasInventoryUpdate = true;
+                }
+                return nextItem;
+            });
+            if (hasInventoryUpdate) {
+                this.saveData(data);
+            }
+        }
 
         return data;
     },
@@ -365,6 +396,7 @@ const AppData = {
             structure: this.getDefaultStructure(),
             worshipSchedules: this.getDefaultWorshipSchedules(),
             churchAnnouncements: this.getDefaultChurchAnnouncements(),
+            inventory: this.getDefaultInventory(),
             events: [
                 {
                     id: '1',
@@ -509,6 +541,47 @@ const AppData = {
                 type: 'general',
                 status: 'draft',
                 content: 'Pendaftaran kelas katekisasi dan baptisan dibuka sampai tanggal 5 April 2026.'
+            }
+        ];
+    },
+
+    getDefaultInventory() {
+        return [
+            {
+                id: 'inv1',
+                name: 'Keyboard Roland',
+                category: 'music',
+                quantity: 1,
+                unit: 'unit',
+                condition: 'good',
+                location: 'Ruang Musik',
+                acquiredDate: '2025-06-10',
+                value: 8500000,
+                notes: 'Digunakan untuk ibadah raya'
+            },
+            {
+                id: 'inv2',
+                name: 'Kursi Plastik',
+                category: 'furniture',
+                quantity: 60,
+                unit: 'buah',
+                condition: 'minor_damage',
+                location: 'Gudang Gereja',
+                acquiredDate: '2024-01-15',
+                value: 5400000,
+                notes: 'Sebagian perlu perbaikan kaki kursi'
+            },
+            {
+                id: 'inv3',
+                name: 'Mikrofon Wireless',
+                category: 'electronic',
+                quantity: 4,
+                unit: 'unit',
+                condition: 'good',
+                location: 'Booth Operator',
+                acquiredDate: '2025-11-20',
+                value: 3200000,
+                notes: ''
             }
         ];
     },
@@ -769,6 +842,46 @@ const AppData = {
     deleteChurchAnnouncement(id) {
         const data = this.getData();
         data.churchAnnouncements = (data.churchAnnouncements || []).filter((item) => item.id !== id);
+        this.saveData(data);
+    },
+
+    // Inventory
+    getInventoryItems() {
+        return this.getData().inventory || [];
+    },
+
+    addInventoryItem(item) {
+        const data = this.getData();
+        item.id = this.generateId();
+        item.quantity = parseInt(item.quantity, 10) || 0;
+        item.value = item.value ? parseInt(item.value, 10) : 0;
+        data.inventory = data.inventory || [];
+        data.inventory.push(item);
+        this.saveData(data);
+        this.addActivity('event', 'Inventaris ditambahkan', item.name);
+        return item;
+    },
+
+    updateInventoryItem(id, updates) {
+        const data = this.getData();
+        data.inventory = data.inventory || [];
+        const index = data.inventory.findIndex((item) => item.id === id);
+        if (index !== -1) {
+            data.inventory[index] = {
+                ...data.inventory[index],
+                ...updates,
+                quantity: updates.quantity !== undefined ? (parseInt(updates.quantity, 10) || 0) : data.inventory[index].quantity,
+                value: updates.value !== undefined && updates.value !== '' ? (parseInt(updates.value, 10) || 0) : data.inventory[index].value
+            };
+            this.saveData(data);
+            return data.inventory[index];
+        }
+        return null;
+    },
+
+    deleteInventoryItem(id) {
+        const data = this.getData();
+        data.inventory = (data.inventory || []).filter((item) => item.id !== id);
         this.saveData(data);
     },
 

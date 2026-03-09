@@ -15,6 +15,7 @@ const App = {
         'commissions-women': { title: 'Komisi Wanita', render: () => Commissions.render('women') },
         attendance: { title: 'Struktur Pengurus', render: () => Attendance.render() },
         finance: { title: 'Keuangan', render: () => Finance.render() },
+        inventory: { title: 'Inventaris Gereja', render: () => Inventory.render() },
         'announcements-schedule': { title: 'Jadwal Ibadah', render: () => WorshipSchedule.render() },
         'announcements-events': { title: 'Event', render: () => Events.render() },
         'announcements-church': { title: 'Pengumuman Gereja', render: () => ChurchAnnouncements.render() },
