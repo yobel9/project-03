@@ -45,6 +45,7 @@ const StorageService = {
     autoSyncKey: 'storageAutoSync',
     autoPullKey: 'storageAutoPull',
     autoPullIntervalKey: 'storageAutoPullIntervalSec',
+    sharedConfigId: 'churchAdminStorageSettings',
     syncMetaKey: 'storageSyncMeta',
     defaultMode: 'local',
     syncTimer: null,
@@ -246,6 +247,102 @@ const StorageService = {
             throw new Error(message || 'Gagal koneksi ke Supabase.');
         }
         return true;
+    },
+
+    getSharedStoragePayload() {
+        const dbConfig = this.getDatabaseConfig();
+        return {
+            mode: this.getMode(),
+            autoSync: this.isAutoSyncEnabled(),
+            autoPull: this.isAutoPullEnabled(),
+            autoPullIntervalSec: this.getAutoPullIntervalSec(),
+            provider: dbConfig.provider || 'supabase',
+            table: dbConfig.table || 'app_storage'
+        };
+    },
+
+    applySharedStoragePayload(payload = {}) {
+        const nextMode = payload.mode === 'database' ? 'database' : 'local';
+        this.setMode(nextMode);
+        this.setAutoSyncEnabled(payload.autoSync === true);
+        this.setAutoPullEnabled(payload.autoPull === true);
+        this.setAutoPullIntervalSec(payload.autoPullIntervalSec || 45);
+
+        const dbConfig = this.getDatabaseConfig();
+        this.setDatabaseConfig({
+            provider: payload.provider || dbConfig.provider || 'supabase',
+            table: payload.table || dbConfig.table || 'app_storage'
+        });
+    },
+
+    async pushSharedStorageSettings() {
+        if (!this.isDatabaseConfigReady()) {
+            throw new Error('Konfigurasi database belum lengkap.');
+        }
+
+        const payload = [{
+            id: this.sharedConfigId,
+            payload: this.getSharedStoragePayload(),
+            updated_at: new Date().toISOString()
+        }];
+
+        const url = `${this.getSupabaseBaseUrl()}?on_conflict=id`;
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                ...this.getSupabaseHeaders(),
+                Prefer: 'resolution=merge-duplicates,return=representation'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            const message = await res.text();
+            throw new Error(message || 'Gagal menyimpan pengaturan shared.');
+        }
+        return true;
+    },
+
+    async pullSharedStorageSettings() {
+        if (!this.isDatabaseConfigReady()) {
+            throw new Error('Konfigurasi database belum lengkap.');
+        }
+
+        const url = `${this.getSupabaseBaseUrl()}?id=eq.${encodeURIComponent(this.sharedConfigId)}&select=payload,updated_at&limit=1`;
+        const res = await fetch(url, {
+            method: 'GET',
+            headers: this.getSupabaseHeaders()
+        });
+
+        if (!res.ok) {
+            const message = await res.text();
+            throw new Error(message || 'Gagal mengambil pengaturan shared.');
+        }
+
+        const rows = await res.json();
+        if (!Array.isArray(rows) || !rows[0] || !rows[0].payload) {
+            return { found: false };
+        }
+
+        this.applySharedStoragePayload(rows[0].payload);
+        return {
+            found: true,
+            payload: rows[0].payload
+        };
+    },
+
+    async autoApplySharedStorageSettings() {
+        if (!this.isDatabaseConfigReady()) {
+            return { applied: false, reason: 'db_not_ready' };
+        }
+        try {
+            const result = await this.pullSharedStorageSettings();
+            if (!result.found) return { applied: false, reason: 'not_found' };
+            return { applied: true, reason: 'ok', payload: result.payload };
+        } catch (error) {
+            console.warn('[StorageService] Shared settings pull skipped:', error.message);
+            return { applied: false, reason: 'error', message: error.message };
+        }
     },
 
     async pushLocalDataToDatabase(storageKey = 'churchAdminData') {

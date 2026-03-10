@@ -82,7 +82,13 @@ const Settings = {
                     <p style="color: var(--text-secondary); margin-bottom: 14px;">
                         Catatan: mode Database masih tahap transisi. Simpan backup sebelum mengaktifkan auto sync.
                     </p>
-                    <button class="btn btn-primary" onclick="Settings.saveStorageSettings()">Simpan Pengaturan Storage</button>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="btn btn-primary" onclick="Settings.saveStorageSettings()">Simpan Pengaturan Storage</button>
+                        <button class="btn btn-secondary" onclick="Settings.pullSharedStorageSettings()">Tarik Pengaturan Shared</button>
+                    </div>
+                    <p style="color: var(--text-muted); margin-top: 10px; font-size: 0.86rem;">
+                        Pengaturan mode/auto sync bisa dishare antar device via database. URL dan anon key tetap perlu diisi per device.
+                    </p>
                 ` : `
                     <p style="color: var(--text-secondary); margin: 0;">
                         Pengaturan mode penyimpanan hanya tersedia untuk akun admin.
@@ -147,7 +153,7 @@ const Settings = {
         `;
     },
 
-    saveStorageSettings() {
+    async saveStorageSettings() {
         if (!Auth.isAdmin()) {
             Components.toast('Hanya admin yang dapat mengubah pengaturan storage.', 'warning');
             return;
@@ -161,22 +167,56 @@ const Settings = {
         const autoPull = document.getElementById('autoPullSelect')?.value === 'true';
         const autoPullIntervalSec = parseInt(document.getElementById('autoPullIntervalSelect')?.value || '45', 10);
 
-        StorageService.setDatabaseConfig({
-            provider: 'supabase',
-            url,
-            anonKey,
-            table
-        });
-        StorageService.setMode(mode);
-        StorageService.setAutoSyncEnabled(autoSync);
-        StorageService.setAutoPullEnabled(autoPull);
-        StorageService.setAutoPullIntervalSec(autoPullIntervalSec);
-        if (window.App && typeof window.App.startBackgroundSync === 'function') {
-            window.App.startBackgroundSync();
+        try {
+            StorageService.setDatabaseConfig({
+                provider: 'supabase',
+                url,
+                anonKey,
+                table
+            });
+            StorageService.setMode(mode);
+            StorageService.setAutoSyncEnabled(autoSync);
+            StorageService.setAutoPullEnabled(autoPull);
+            StorageService.setAutoPullIntervalSec(autoPullIntervalSec);
+
+            if (StorageService.getMode() === 'database' && StorageService.isDatabaseConfigReady()) {
+                await StorageService.pushSharedStorageSettings();
+            }
+
+            if (window.App && typeof window.App.startBackgroundSync === 'function') {
+                window.App.startBackgroundSync();
+            }
+
+            Components.toast('Pengaturan storage disimpan.', 'success');
+            this.render();
+        } catch (error) {
+            Components.toast(`Gagal simpan pengaturan shared: ${error.message}`, 'error');
+            this.render();
+        }
+    },
+
+    async pullSharedStorageSettings() {
+        if (!Auth.isAdmin()) {
+            Components.toast('Hanya admin yang dapat menarik pengaturan shared.', 'warning');
+            return;
         }
 
-        Components.toast('Pengaturan storage disimpan.', 'success');
-        this.render();
+        try {
+            const result = await StorageService.pullSharedStorageSettings();
+            if (!result.found) {
+                Components.toast('Pengaturan shared belum ada di database.', 'info');
+                return;
+            }
+
+            if (window.App && typeof window.App.startBackgroundSync === 'function') {
+                window.App.startBackgroundSync();
+            }
+
+            Components.toast('Pengaturan shared berhasil diterapkan.', 'success');
+            this.render();
+        } catch (error) {
+            Components.toast(`Gagal tarik pengaturan shared: ${error.message}`, 'error');
+        }
     },
 
     async testDbConnection() {

@@ -34,6 +34,12 @@ const App = {
         this.setupUserActions();
         this.updateCurrentUserProfile();
 
+        // Pull shared storage settings from DB so other devices can follow admin config.
+        const sharedSettings = await StorageService.autoApplySharedStorageSettings();
+        if (sharedSettings.applied) {
+            this.applySidebarState();
+        }
+
         // Optional startup sync from database mode (safe no-op in local mode).
         const startupSync = await StorageService.autoPullOnStartup('churchAdminData');
         if (startupSync.pulled && startupSync.changed) {
