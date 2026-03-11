@@ -8,6 +8,7 @@ const Dashboard = {
 
     render() {
         this.clearCountdownTimer();
+        console.log('Rendering dashboard with Broadcast button');
 
         const stats = AppData.getStats();
         const activeAnnouncements = AppData.getChurchAnnouncements()
@@ -79,6 +80,35 @@ const Dashboard = {
                         </div>
                         <div class="stat-value dashboard-balance-value ${this.balanceHidden ? 'masked' : ''}">${this.formatBalance(totalBalance)}</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card" style="margin-bottom: 24px;">
+                <div class="card-header">
+                    <h3 class="card-title">Aksi Cepat</h3>
+                </div>
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+                    <button class="btn btn-primary" onclick="Members.showAddModal()">
+                        <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M16 21V19C16 16.7909 14.2091 15 12 15H6C3.79086 15 2 16.7909 2 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><path d="M19 8V14M19 11H16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Tambah Jemaat
+                    </button>
+                    <button class="btn btn-secondary" onclick="Dashboard.openBroadcastModal()">
+                        <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M17 21V19C17 16.7909 14.7614 15 12 15H6C3.23858 15 1 16.7909 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 11C11.2091 11 13 9.20914 13 7C13 4.79086 11.2091 3 9 3C6.79086 3 5 4.79086 5 7C5 9.20914 6.79086 11 9 11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M23 21V19C22.9986 18.1137 22.7045 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Broadcast WhatsApp
+                    </button>
+                    <button class="btn btn-secondary" onclick="App.navigateTo('attendance')">
+                        <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 11L12 14L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Kelola Struktur
+                    </button>
+                    <button class="btn btn-secondary" onclick="App.navigateTo('finance')">
+                        <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M12 1V23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17 5H9.5C7.01 5 5 7.01 5 9.5S7.01 14 9.5 14H14.5C16.99 14 19 16.01 19 18.5S16.99 23 14.5 23H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Catat Keuangan
+                    </button>
+                    <button class="btn btn-secondary" onclick="App.navigateTo('announcements-events')">
+                        <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        Kelola Event
+                    </button>
                 </div>
             </div>
 
@@ -279,35 +309,6 @@ const Dashboard = {
                     </div>
                 </div>
             </div>
-
-            <!-- Quick Actions -->
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h3 class="card-title">Aksi Cepat</h3>
-                </div>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                    <button class="btn btn-primary" onclick="Members.showAddModal()">
-                        <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M16 21V19C16 16.7909 14.2091 15 12 15H6C3.79086 15 2 16.7909 2 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><path d="M19 8V14M19 11H16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        Tambah Jemaat
-                    </button>
-                    <button class="btn btn-secondary" onclick="App.navigateTo('attendance')">
-                        <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 11L12 14L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V5C3 3.89543 3.89543 3 5 3H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        Kelola Struktur
-                    </button>
-                    <button class="btn btn-secondary" onclick="App.navigateTo('finance')">
-                        <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M12 1V23" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M17 5H9.5C7.01 5 5 7.01 5 9.5S7.01 14 9.5 14H14.5C16.99 14 19 16.01 19 18.5S16.99 23 14.5 23H6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        Catat Keuangan
-                    </button>
-                    <button class="btn btn-secondary" onclick="App.navigateTo('announcements-events')">
-                        <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                        Kelola Event
-                    </button>
-                    <button class="btn btn-secondary" onclick="App.navigateTo('announcements-church')">
-                        <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M4 4H20V20H4V4Z" stroke="currentColor" stroke-width="2"/><path d="M8 8H16" stroke="currentColor" stroke-width="2"/><path d="M8 12H16" stroke="currentColor" stroke-width="2"/><path d="M8 16H13" stroke="currentColor" stroke-width="2"/></svg>
-                        Pengumuman Gereja
-                    </button>
-                </div>
-            </div>
         `;
 
         if (primaryImportantEvent) {
@@ -409,6 +410,114 @@ const Dashboard = {
         const baseUrl = normalizedPhone ? `https://wa.me/${normalizedPhone}` : 'https://wa.me/';
         const url = `${baseUrl}?text=${encodeURIComponent(message)}`;
         window.open(url, '_blank', 'noopener,noreferrer');
+    },
+
+    openBroadcastModal() {
+        console.log('Broadcast modal opened');
+        const members = AppData.getMembers().filter(m => m.status === 'active' && m.phone);
+        
+        if (members.length === 0) {
+            Components.toast('Tidak ada anggota dengan nomor telepon.', 'warning');
+            return;
+        }
+
+        const bodyHtml = `
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">Pesan Broadcast</label>
+                <textarea id="broadcastMessage" rows="4" placeholder="Tulis pesan untuk seluruh anggota..." 
+                    style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); 
+                    background: var(--input-bg); color: var(--text-primary); resize: vertical; font-family: inherit;"></textarea>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 6px;">
+                    Pesan ini akan dikirim ke ${members.length} anggota via WhatsApp
+                </div>
+            </div>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">Pilih Penerima</label>
+                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                    <button class="btn btn-sm btn-secondary" onclick="Dashboard.selectAllBroadcastMembers()">Pilih Semua (${members.length})</button>
+                    <button class="btn btn-sm btn-secondary" onclick="Dashboard.deselectAllBroadcastMembers()">Batal Pilih Semua</button>
+                </div>
+                <div id="broadcastMembersList" style="max-height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: var(--radius-md);">
+                    ${members.map(m => `
+                        <div style="display: flex; align-items: center; gap: 10px; padding: 10px; border-bottom: 1px solid var(--border);">
+                            <input type="checkbox" id="broadcast_${m.id}" value="${m.id}" checked 
+                                style="width: 18px; height: 18px; cursor: pointer;">
+                            <label for="broadcast_${m.id}" style="flex: 1; cursor: pointer;">
+                                <div style="font-weight: 500;">${m.name}</div>
+                                <div style="font-size: 0.85rem; color: var(--text-secondary);">${m.phone || '-'}</div>
+                            </label>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        const footerHtml = `
+            <button class="btn btn-secondary" onclick="Components.closeModal()">Batal</button>
+            <button class="btn btn-primary" onclick="Dashboard.sendBroadcast()">Kirim via WhatsApp</button>
+        `;
+
+        Components.modal('Broadcast WhatsApp ke Anggota', bodyHtml, footerHtml);
+    },
+
+    selectAllBroadcastMembers() {
+        const checkboxes = document.querySelectorAll('#broadcastMembersList input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = true);
+    },
+
+    deselectAllBroadcastMembers() {
+        const checkboxes = document.querySelectorAll('#broadcastMembersList input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = false);
+    },
+
+    sendBroadcast() {
+        const messageInput = document.getElementById('broadcastMessage');
+        const message = messageInput?.value?.trim();
+
+        if (!message) {
+            Components.toast('Mohon tulis pesan terlebih dahulu.', 'warning');
+            return;
+        }
+
+        const checkboxes = document.querySelectorAll('#broadcastMembersList input[type="checkbox"]:checked');
+        const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+
+        if (selectedIds.length === 0) {
+            Components.toast('Pilih setidaknya satu penerima.', 'warning');
+            return;
+        }
+
+        const members = AppData.getMembers().filter(m => selectedIds.includes(m.id) && m.phone);
+        
+        if (members.length === 0) {
+            Components.toast('Tidak ada anggota yang dipilih memiliki nomor telepon.', 'warning');
+            return;
+        }
+
+        Components.closeModal();
+
+        // Open WhatsApp for each selected member
+        let sentCount = 0;
+        members.forEach((member, index) => {
+            const normalizedPhone = (member.phone || '').replace(/[^0-9]/g, '');
+            if (!normalizedPhone) return;
+
+            const personalizedMessage = `Shalom ${member.name}, ${message}`;
+            const url = `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(personalizedMessage)}`;
+            
+            // Open each WhatsApp in a new tab with a slight delay
+            setTimeout(() => {
+                window.open(url, '_blank', 'noopener,noreferrer');
+            }, index * 500); // 500ms delay between each
+            
+            sentCount++;
+        });
+
+        Components.toast(`Membuka ${sentCount} jendela WhatsApp...`, 'success');
+        
+        if (sentCount < members.length) {
+            Components.toast(`${members.length - sentCount} anggota tidak memiliki nomor telepon.`, 'warning');
+        }
     },
 
     getCountdownLabel(eventDateString) {
