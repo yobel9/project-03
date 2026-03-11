@@ -253,7 +253,7 @@ const Dashboard = {
                     <button class="btn btn-sm btn-secondary" onclick="App.navigateTo('members')">Lihat Jemaat</button>
                 </div>
                 <div class="birthday-grid">
-                    <div style="background: var(--background); border-radius: var(--radius-lg); padding: 16px;">
+                    <div style="background: var(--card-bg); border-radius: var(--radius-lg); padding: 16px;">
                         <div style="font-weight: 700; margin-bottom: 10px; color: var(--accent);">Hari Ini</div>
                         ${birthdayData.today.length > 0 ? birthdayData.today.map((item) => `
                             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border);">
@@ -265,8 +265,8 @@ const Dashboard = {
                             </div>
                         `).join('') : `<div style="color: var(--text-secondary); font-size: 0.9rem;">Tidak ada ulang tahun hari ini.</div>`}
                     </div>
-                    <div style="background: var(--background); border-radius: var(--radius-lg); padding: 16px;">
-                        <div style="font-weight: 700; margin-bottom: 10px; color: var(--primary);">7 Hari Ke Depan</div>
+                    <div style="background: var(--card-bg); border-radius: var(--radius-lg); padding: 16px;">
+                        <div style="font-weight: 700; margin-bottom: 10px; color: var(--accent);">7 Hari Ke Depan</div>
                         ${birthdayData.upcoming.length > 0 ? birthdayData.upcoming.map((item) => `
                             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border);">
                                 <div>
