@@ -290,11 +290,11 @@ const Settings = {
             return;
         }
         
-        // Save to storage - enable both auto sync and auto pull
+        // Save to storage - enable auto sync but disable auto pull to prevent data overwrite
         StorageService.setDatabaseConfig({ url, anonKey });
         StorageService.setMode('database');
         StorageService.setAutoSyncEnabled(true);
-        StorageService.setAutoPullEnabled(true);
+        StorageService.setAutoPullEnabled(false); // Disable pull to prevent overwriting local changes
         
         Components.toast('Konfigurasi Supabase disimpan. Menguji koneksi...', 'success');
         
