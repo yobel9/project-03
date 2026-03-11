@@ -9,6 +9,7 @@ const Settings = {
         
         // Get saved settings
         const churchName = localStorage.getItem('churchName') || 'GerejaKu';
+        const churchShortName = localStorage.getItem('churchShortName') || '';
         const churchLogo = localStorage.getItem('churchLogo') || '';
 
         const content = document.getElementById('content');
@@ -29,6 +30,12 @@ const Settings = {
                 <div class="form-group">
                     <label class="form-label">Nama Gereja</label>
                     <input type="text" id="churchNameInput" class="form-input" value="${churchName}" placeholder="Nama Gereja">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Nama Singkat (untuk Sidebar)</label>
+                    <input type="text" id="churchShortNameInput" class="form-input" value="${churchShortName}" placeholder="Contoh: GerejaKu">
+                    <small style="color: var(--text-secondary);">Nama singkat yang tampil di sidebar. Kalau kosong, pakai nama lengkap.</small>
                 </div>
                 
                 <div class="form-group">
@@ -133,9 +140,11 @@ const Settings = {
     
     async saveChurchInfo() {
         const nameInput = document.getElementById('churchNameInput');
+        const shortNameInput = document.getElementById('churchShortNameInput');
         const logoInput = document.getElementById('churchLogoInput');
         
         const churchName = nameInput.value.trim();
+        const churchShortName = shortNameInput ? shortNameInput.value.trim() : '';
         
         if (!churchName) {
             Components.toast('Nama gereja tidak boleh kosong!', 'error');
@@ -144,10 +153,12 @@ const Settings = {
         
         // Save church name
         localStorage.setItem('churchName', churchName);
+        localStorage.setItem('churchShortName', churchShortName);
         
-        // Update UI immediately
+        // Update UI immediately - use short name for sidebar, full name for title
+        const displayName = churchShortName || churchName;
         const logoText = document.getElementById('logoText');
-        if (logoText) logoText.textContent = churchName;
+        if (logoText) logoText.textContent = displayName;
         document.title = churchName + ' Admin';
         
         // Handle logo upload

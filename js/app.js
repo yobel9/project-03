@@ -375,15 +375,17 @@ const App = {
     // Load app settings (church name, logo)
     loadAppSettings() {
         const churchName = localStorage.getItem('churchName');
+        const churchShortName = localStorage.getItem('churchShortName') || churchName;
         const churchLogo = localStorage.getItem('churchLogo');
         
-        if (churchName) {
-            const logoText = document.getElementById('logoText');
-            if (logoText) logoText.textContent = churchName;
-            
-            // Update document title
-            document.title = churchName + ' Admin';
-        }
+        // Use short name for sidebar, full name for title
+        const displayName = churchShortName || churchName || 'GerejaKu';
+        const logoText = document.getElementById('logoText');
+        if (logoText) logoText.textContent = displayName;
+        
+        // Update document title (use full name)
+        const fullName = churchName || 'GerejaKu';
+        document.title = fullName + ' Admin';
         
         if (churchLogo) {
             const logoImage = document.getElementById('logoImage');
