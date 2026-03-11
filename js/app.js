@@ -60,7 +60,7 @@ const App = {
             document.documentElement.setAttribute('data-theme', 'dark');
         }
         
-        // Load app settings (church name, logo)
+        // Load app settings (church name, logo) - run early to update UI
         this.loadAppSettings();
         
         // Preload dashboard script for faster initial load
@@ -370,7 +370,7 @@ const App = {
         Components.closeModal();
         Components.toast('Restore data berhasil. Halaman akan dimuat ulang.', 'success');
         setTimeout(() => window.location.reload(), 500);
-    }
+    },
     
     // Load app settings (church name, logo)
     loadAppSettings() {
