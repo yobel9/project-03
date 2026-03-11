@@ -42,6 +42,11 @@ self.addEventListener('install', (event) => {
 
 // Fetch event - serve from network first, fallback to cache
 self.addEventListener('fetch', (event) => {
+  // Skip non-GET requests (POST, PUT, DELETE, etc.)
+  if (event.request.method !== 'GET') {
+    return;
+  }
+  
   event.respondWith(
     fetch(event.request)
       .then((response) => {
