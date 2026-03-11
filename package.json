@@ -10,11 +10,16 @@
     "minify:all": "npm run minify:css && npm run minify:js && npm run minify:js:pages",
     "dev": "echo 'Running in development mode - no minification'"
   },
-  "keywords": ["church", "admin", "pwa"],
+  "keywords": [
+    "church",
+    "admin",
+    "pwa"
+  ],
   "author": "",
   "license": "MIT",
   "devDependencies": {
     "clean-css-cli": "^5.6.3",
+    "sharp": "^0.34.5",
     "terser": "^5.31.0"
   }
 }
