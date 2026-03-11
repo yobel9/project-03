@@ -13,10 +13,23 @@
     <link rel="stylesheet" href="css/styles.min.css?v=20260315">
 </head>
 <body>
-    <!-- Chat FAB Button -->
-    <button class="chat-fab" title="Chat Admin" onclick="App.loadPage('chat'); return false;" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:#22c55e;color:white;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:9999;text-decoration:none;border:none;cursor:pointer;">
+    <!-- Chat FAB Button (hidden on login page) -->
+    <button class="chat-fab" id="chatFab" title="Chat Admin" onclick="App.loadPage('chat'); return false;" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:#22c55e;color:white;display:none;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:9999;border:none;cursor:pointer;">
         <svg viewBox="0 0 24 24" fill="none" width="24" height="24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2"/></svg>
     </button>
+    <script>
+        // Show chat button when logged in
+        function showChatFab() {
+            var fab = document.getElementById('chatFab');
+            if (fab) fab.style.display = 'flex';
+        }
+        // Check auth and show FAB
+        if (localStorage.getItem('gerejaku_user')) {
+            window.addEventListener('load', function() {
+                setTimeout(showChatFab, 500);
+            });
+        }
+    </script>
     <script>
         // Handle hash navigation
         window.addEventListener('hashchange', function() {
