@@ -168,14 +168,28 @@ const ChurchAnnouncements = {
         this.filters.search = value;
         this.applyFilters();
         
-        // Debounce render to prevent cursor jumping
+        // Debounce render to prevent cursor jumping - longer delay
         if (this.searchDebounceTimer) {
             clearTimeout(this.searchDebounceTimer);
         }
         this.searchDebounceTimer = setTimeout(() => {
+            // Save input element reference before render
+            const input = document.getElementById('churchAnnouncementSearchInput');
+            const savedValue = input ? input.value : value;
+            const savedPos = input ? input.selectionStart : savedValue.length;
+            
             this.render();
-            Components.preserveInputFocus('churchAnnouncementSearchInput', value);
-        }, 150);
+            
+            // Restore input after render
+            const newInput = document.getElementById('churchAnnouncementSearchInput');
+            if (newInput) {
+                newInput.value = savedValue;
+                newInput.focus();
+                if (savedPos <= savedValue.length) {
+                    newInput.setSelectionRange(savedPos, savedPos);
+                }
+            }
+        }, 300);
     },
 
     handleStatusFilter(value) {

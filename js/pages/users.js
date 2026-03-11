@@ -115,14 +115,28 @@ const Users = {
         this.filters.search = value;
         this.applyFilters();
         
-        // Debounce render to prevent cursor jumping
+        // Debounce render to prevent cursor jumping - longer delay
         if (this.searchDebounceTimer) {
             clearTimeout(this.searchDebounceTimer);
         }
         this.searchDebounceTimer = setTimeout(() => {
+            // Save input element reference before render
+            const input = document.getElementById('usersSearchInput');
+            const savedValue = input ? input.value : value;
+            const savedPos = input ? input.selectionStart : savedValue.length;
+            
             this.render();
-            Components.preserveInputFocus('usersSearchInput', value);
-        }, 150);
+            
+            // Restore input after render
+            const newInput = document.getElementById('usersSearchInput');
+            if (newInput) {
+                newInput.value = savedValue;
+                newInput.focus();
+                if (savedPos <= savedValue.length) {
+                    newInput.setSelectionRange(savedPos, savedPos);
+                }
+            }
+        }, 300);
     },
 
     getFormHtml(item = {}) {
