@@ -83,7 +83,26 @@ const App = {
         this.setupUserActions();
         await this.updateCurrentUserProfile();
         
+        // Add floating chat button
+        this.addFloatingChatButton();
+        
         await this.loadPage('dashboard');
+    },
+
+    addFloatingChatButton() {
+        // Check if button already exists
+        if (document.querySelector('.floating-chat-btn')) return;
+        
+        const btn = document.createElement('a');
+        btn.href = '#chat';
+        btn.className = 'floating-chat-btn';
+        btn.title = 'Chat Admin';
+        btn.onclick = (e) => { e.preventDefault(); this.loadPage('chat'); };
+        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>`;
+        document.body.appendChild(btn);
+        console.log('Floating chat button added');
     },
 
     setupNavigation() {
