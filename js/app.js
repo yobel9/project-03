@@ -374,67 +374,73 @@ const App = {
     
     // Load app settings (church name, logo)
     loadAppSettings() {
-        // Get saved values from localStorage
-        const churchName = localStorage.getItem('churchName') || '';
-        const churchShortName = localStorage.getItem('churchShortName') || churchName;
-        const churchLogo = localStorage.getItem('churchLogo') || '';
-        
-        // If no saved settings, use defaults
-        if (!churchName && !churchShortName && !churchLogo) {
-            return;
-        }
-        
-        console.log('Loading app settings:', { churchName, churchShortName, hasLogo: !!churchLogo });
-        
-        // Use short name for sidebar, full name for title
-        const displayName = churchShortName || churchName || 'GerejaKu';
-        
-        // Update sidebar text - find all possible elements
-        const sidebarLogo = document.getElementById('sidebarLogo');
-        if (sidebarLogo) {
-            const logoText = sidebarLogo.querySelector('.logo-text');
-            if (logoText) {
-                logoText.textContent = displayName;
-                console.log('Updated sidebar text to:', displayName);
-            }
-        }
-        
-        // Also try direct ID
-        const logoTextEl = document.getElementById('logoText');
-        if (logoTextEl) {
-            logoTextEl.textContent = displayName;
-        }
-        
-        // Update document title (use full name)
-        const fullName = churchName || 'GerejaKu';
-        document.title = fullName + ' Admin';
-        
-        // Update logo in sidebar
-        if (churchLogo) {
-            // Try to find the image element in sidebar
-            const logoImg = document.querySelector('#sidebarLogo img');
-            const logoSvg = document.querySelector('#sidebarLogo svg');
+        try {
+            // Get saved values from localStorage
+            const churchName = localStorage.getItem('churchName') || '';
+            const churchShortName = localStorage.getItem('churchShortName') || churchName;
+            const churchLogo = localStorage.getItem('churchLogo') || '';
             
-            if (logoImg) {
-                logoImg.src = churchLogo;
-                logoImg.style.display = 'block';
-                if (logoSvg) logoSvg.style.display = 'none';
-                console.log('Updated logo image');
-            } else {
-                // Create img element if it doesn't exist
-                const newImg = document.createElement('img');
-                newImg.src = churchLogo;
-                newImg.alt = 'Logo';
-                newImg.className = 'logo-icon';
-                newImg.style.cssText = 'width: 32px; height: 32px; border-radius: 8px; object-fit: cover; display: block;';
-                
-                if (logoSvg && logoSvg.parentNode) {
-                    logoSvg.parentNode.insertBefore(newImg, logoSvg);
-                } else if (sidebarLogo) {
-                    sidebarLogo.appendChild(newImg);
-                }
-                console.log('Created new logo image element');
+            console.log('loadAppSettings - churchName:', churchName);
+            console.log('loadAppSettings - churchShortName:', churchShortName);
+            console.log('loadAppSettings - churchLogo exists:', !!churchLogo);
+            
+            // If no saved settings, use defaults
+            if (!churchName && !churchShortName && !churchLogo) {
+                console.log('No saved settings found');
+                return;
             }
+            
+            // Use short name for sidebar, full name for title
+            const displayName = churchShortName || churchName || 'GerejaKu';
+            
+            // Update sidebar text - find all possible elements
+            const sidebarLogo = document.getElementById('sidebarLogo');
+            console.log('sidebarLogo element:', sidebarLogo);
+            
+            if (sidebarLogo) {
+                const logoText = sidebarLogo.querySelector('.logo-text');
+                if (logoText) {
+                    logoText.textContent = displayName;
+                    console.log('Updated sidebar text to:', displayName);
+                }
+            }
+            
+            // Update document title (use full name)
+            const fullName = churchName || 'GerejaKu';
+            document.title = fullName + ' Admin';
+            
+            // Update logo in sidebar
+            if (churchLogo) {
+                // Try to find the image element in sidebar
+                const logoImg = document.querySelector('#sidebarLogo img');
+                const logoSvg = document.querySelector('#sidebarLogo svg');
+                
+                console.log('logoImg element:', logoImg);
+                console.log('logoSvg element:', logoSvg);
+                
+                if (logoImg) {
+                    logoImg.src = churchLogo;
+                    logoImg.style.display = 'block';
+                    if (logoSvg) logoSvg.style.display = 'none';
+                    console.log('Updated logo image');
+                } else {
+                    // Create img element if it doesn't exist
+                    const newImg = document.createElement('img');
+                    newImg.src = churchLogo;
+                    newImg.alt = 'Logo';
+                    newImg.className = 'logo-icon';
+                    newImg.style.cssText = 'width: 32px; height: 32px; border-radius: 8px; object-fit: cover; display: block;';
+                    
+                    if (logoSvg && logoSvg.parentNode) {
+                        logoSvg.parentNode.insertBefore(newImg, logoSvg);
+                    } else if (sidebarLogo) {
+                        sidebarLogo.appendChild(newImg);
+                    }
+                    console.log('Created new logo image element');
+                }
+            }
+        } catch (e) {
+            console.error('Error in loadAppSettings:', e);
         }
     },
     
