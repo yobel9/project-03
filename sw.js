@@ -1,5 +1,5 @@
 // Service Worker for GerejaKu Admin PWA
-const CACHE_NAME = 'gerejaku-v10';
+const CACHE_NAME = 'gerejaku-v11';
 const BASE_PATH = '/project-02';
 
 const urlsToCache = [
