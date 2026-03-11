@@ -91,18 +91,20 @@ const App = {
 
     addFloatingChatButton() {
         // Check if button already exists
-        if (document.querySelector('.floating-chat-btn')) return;
+        if (document.querySelector('.floating-chat-btn')) {
+            console.log('Button already exists');
+            return;
+        }
         
         const btn = document.createElement('a');
         btn.href = '#chat';
         btn.className = 'floating-chat-btn';
         btn.title = 'Chat Admin';
+        btn.style.cssText = 'position: fixed !important; bottom: 24px !important; right: 24px !important; width: 56px !important; height: 56px !important; border-radius: 50% !important; background: #2563eb !important; color: white !important; display: flex !important; align-items: center !important; justify-content: center !important; box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important; z-index: 9999 !important; cursor: pointer !important;';
         btn.onclick = (e) => { e.preventDefault(); this.loadPage('chat'); };
-        btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>`;
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" width="24" height="24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2"/></svg>';
         document.body.appendChild(btn);
-        console.log('Floating chat button added');
+        console.log('Floating chat button added successfully');
     },
 
     setupNavigation() {
