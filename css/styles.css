@@ -79,6 +79,35 @@
     border-color: #718096;
 }
 
+/* Dark Mode - Table Overrides */
+[data-theme="dark"] .table tbody tr:nth-child(even) {
+    background: #1a202c;
+}
+
+[data-theme="dark"] .table tbody tr:nth-child(even):hover {
+    background: #2d3748;
+}
+
+[data-theme="dark"] .badge-success {
+    background: rgba(72, 187, 120, 0.25);
+    color: #68d391;
+}
+
+[data-theme="dark"] .badge-warning {
+    background: rgba(237, 137, 54, 0.25);
+    color: #f6ad55;
+}
+
+[data-theme="dark"] .badge-danger {
+    background: rgba(229, 62, 62, 0.25);
+    color: #feb2b2;
+}
+
+[data-theme="dark"] .badge-info {
+    background: rgba(66, 153, 225, 0.25);
+    color: #63b3ed;
+}
+
 /* Reset & Base */
 *, *::before, *::after {
     box-sizing: border-box;
