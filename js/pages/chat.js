@@ -1,5 +1,5 @@
 // Chat Page - Internal messaging between users and admin
-const Chat = {
+var Chat = {
     currentUser: null,
     messages: [],
     chatInterval: null,

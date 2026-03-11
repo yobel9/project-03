@@ -2,7 +2,7 @@
 // Church Admin - Inventory Page
 // ============================================
 
-const Inventory = {
+var Inventory = {
     items: [],
     filteredItems: [],
     maxImageSizeMB: 4,

@@ -2,7 +2,7 @@
 // Church Admin - Finance Page
 // ============================================
 
-const Finance = {
+var Finance = {
     incomes: [],
     expenses: [],
     transactions: [],

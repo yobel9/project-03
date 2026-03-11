@@ -2,7 +2,7 @@
 // Church Admin - Settings Page
 // ============================================
 
-const Settings = {
+var Settings = {
     async render() {
         const isAdmin = await Auth.isAdmin();
         const isDark = localStorage.getItem('theme') === 'dark';

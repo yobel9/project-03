@@ -2,7 +2,7 @@
 // Church Admin - Organization Structure Page
 // ============================================
 
-const Attendance = {
+var Attendance = {
     structure: [],
     filters: {
         search: ''

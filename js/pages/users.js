@@ -2,7 +2,7 @@
 // Church Admin - User Management
 // ============================================
 
-const Users = {
+var Users = {
     users: [],
     filteredUsers: [],
     filters: {

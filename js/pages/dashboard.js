@@ -2,7 +2,7 @@
 // Church Admin - Dashboard Page
 // ============================================
 
-const Dashboard = {
+var Dashboard = {
     countdownTimer: null,
     balanceHidden: localStorage.getItem('dashboardBalanceHidden') === 'true',
 

@@ -2,7 +2,7 @@
 // Church Admin - Worship Schedule Page
 // ============================================
 
-const WorshipSchedule = {
+var WorshipSchedule = {
     schedules: [],
     filteredSchedules: [],
     filters: {

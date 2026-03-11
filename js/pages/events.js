@@ -2,7 +2,7 @@
 // Church Admin - Events Page
 // ============================================
 
-const Events = {
+var Events = {
     events: [],
     filteredEvents: [],
     currentPage: 1,

@@ -2,7 +2,7 @@
 // Church Admin - Church Announcements Page
 // ============================================
 
-const ChurchAnnouncements = {
+var ChurchAnnouncements = {
     announcements: [],
     filteredAnnouncements: [],
     filters: {

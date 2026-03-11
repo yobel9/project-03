@@ -2,7 +2,7 @@
 // Church Admin - Commissions Page
 // ============================================
 
-const Commissions = {
+var Commissions = {
     members: [],
     filteredMembers: [],
     currentPage: 1,
