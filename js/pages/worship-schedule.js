@@ -147,8 +147,15 @@ const WorshipSchedule = {
     handleSearch(value) {
         this.filters.search = value;
         this.applyFilters();
-        this.render();
-        Components.preserveInputFocus('worshipScheduleSearchInput', value);
+        
+        // Debounce render to prevent cursor jumping
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+        this.searchDebounceTimer = setTimeout(() => {
+            this.render();
+            Components.preserveInputFocus('worshipScheduleSearchInput', value);
+        }, 150);
     },
 
     handleCategoryFilter(value) {

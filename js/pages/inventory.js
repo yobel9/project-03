@@ -202,8 +202,15 @@ const Inventory = {
     handleSearch(value) {
         this.filters.search = value;
         this.applyFilters();
-        this.render();
-        Components.preserveInputFocus('inventorySearchInput', value);
+        
+        // Debounce render to prevent cursor jumping
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+        this.searchDebounceTimer = setTimeout(() => {
+            this.render();
+            Components.preserveInputFocus('inventorySearchInput', value);
+        }, 150);
     },
 
     handleCategoryFilter(value) {

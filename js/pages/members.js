@@ -258,8 +258,15 @@ const Members = {
     handleSearch(value) {
         this.filters.search = value;
         this.applyFilters();
-        this.render();
-        Components.preserveInputFocus('membersSearchInput', value);
+        
+        // Debounce render to prevent cursor jumping
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+        this.searchDebounceTimer = setTimeout(() => {
+            this.render();
+            Components.preserveInputFocus('membersSearchInput', value);
+        }, 150);
     },
 
     handleStatusFilter(value) {

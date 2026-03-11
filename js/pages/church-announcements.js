@@ -167,8 +167,15 @@ const ChurchAnnouncements = {
     handleSearch(value) {
         this.filters.search = value;
         this.applyFilters();
-        this.render();
-        Components.preserveInputFocus('churchAnnouncementSearchInput', value);
+        
+        // Debounce render to prevent cursor jumping
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+        this.searchDebounceTimer = setTimeout(() => {
+            this.render();
+            Components.preserveInputFocus('churchAnnouncementSearchInput', value);
+        }, 150);
     },
 
     handleStatusFilter(value) {

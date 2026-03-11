@@ -110,8 +110,15 @@ const Attendance = {
 
     handleSearch(value) {
         this.filters.search = value;
-        this.render();
-        Components.preserveInputFocus('structureSearchInput', value);
+        
+        // Debounce render to prevent cursor jumping
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+        this.searchDebounceTimer = setTimeout(() => {
+            this.render();
+            Components.preserveInputFocus('structureSearchInput', value);
+        }, 150);
     },
 
     showAddModal() {
