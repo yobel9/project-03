@@ -169,7 +169,11 @@ const StorageService = {
         try {
             const parsed = JSON.parse(raw);
             // If saved config doesn't have valid anonKey, use default
-            if (!parsed || !parsed.anonKey || parsed.anonKey.length < 20) {
+            // Valid JWT should start with 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9'
+            const isValidJWT = parsed.anonKey && parsed.anonKey.startsWith('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');
+            const isValidURL = parsed.url && parsed.url.includes('.supabase.co');
+            if (!isValidJWT || !isValidURL) {
+                console.log('Invalid config detected, using default');
                 return defaultConfig;
             }
             return {
