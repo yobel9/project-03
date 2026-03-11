@@ -11,6 +11,9 @@ const Settings = {
         const churchName = localStorage.getItem('churchName') || 'GerejaKu';
         const churchShortName = localStorage.getItem('churchShortName') || '';
         const churchLogo = localStorage.getItem('churchLogo') || '';
+        
+        // Get Supabase config
+        const supabaseConfig = StorageService.getDatabaseConfig();
 
         const content = document.getElementById('content');
         content.innerHTML = `
@@ -78,6 +81,46 @@ const Settings = {
                         </span>
                     </label>
                 </div>
+            </div>
+
+            <!-- Database (Supabase) -->
+            <div class="card" style="margin-top: 20px;">
+                <div class="card-header">
+                    <h3 class="card-title">Database (Supabase)</h3>
+                </div>
+                <p style="color: var(--text-secondary); margin-bottom: 16px;">
+                    Sambungkan ke Supabase untuk menyimpan data di cloud.
+                </p>
+                
+                <div class="form-group">
+                    <label class="form-label">Supabase URL</label>
+                    <input type="text" id="supabaseUrlInput" class="form-input" value="${supabaseConfig.url || ''}" placeholder="https://xxxxx.supabase.co">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Anon Key</label>
+                    <input type="text" id="supabaseAnonKeyInput" class="form-input" value="${supabaseConfig.anonKey || ''}" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                    <small style="color: var(--text-secondary);">Dapatkan dari Project Settings > API > anon public</small>
+                </div>
+                
+                <div style="display: flex; gap: 12px; margin-top: 16px;">
+                    <button class="btn btn-primary" onclick="Settings.saveSupabaseConfig()">
+                        <svg viewBox="0 0 24 24" fill="none" style="width: 18px; height: 18px; margin-right: 8px;"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Sambungkan
+                    </button>
+                    <button class="btn btn-secondary" onclick="Settings.testSupabaseConnection()">
+                        Test Koneksi
+                    </button>
+                </div>
+                
+                ${supabaseConfig.url ? `
+                    <div style="margin-top: 16px; padding: 12px; background: var(--success-bg, #dcfce7); border-radius: var(--radius); border: 1px solid var(--success, #22c55e);">
+                        <div style="display: flex; align-items: center; gap: 8px; color: var(--success, #16a34a);">
+                            <svg viewBox="0 0 24 24" fill="none" style="width: 20px; height: 20px;"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22,4 12,14.01 9,11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <strong>Status: Terhubung</strong>
+                        </div>
+                    </div>
+                ` : ''}
             </div>
 
             <!-- Backup & Restore Data -->
@@ -220,5 +263,55 @@ const Settings = {
         
         // Re-render to update the UI
         this.render();
+    },
+
+    saveSupabaseConfig() {
+        const urlInput = document.getElementById('supabaseUrlInput');
+        const anonKeyInput = document.getElementById('supabaseAnonKeyInput');
+        
+        const url = urlInput?.value?.trim();
+        const anonKey = anonKeyInput?.value?.trim();
+        
+        if (!url) {
+            Components.toast('Mohon masukkan URL Supabase', 'warning');
+            return;
+        }
+        
+        if (!anonKey) {
+            Components.toast('Mohon masukkan Anon Key', 'warning');
+            return;
+        }
+        
+        // Save to storage
+        StorageService.setDatabaseConfig({ url, anonKey });
+        StorageService.setMode('database');
+        
+        Components.toast('Konfigurasi Supabase disimpan. Menguji koneksi...', 'success');
+        
+        // Test connection
+        this.testSupabaseConnection();
+    },
+
+    async testSupabaseConnection() {
+        try {
+            Components.toast('Menguji koneksi ke Supabase...', 'info');
+            
+            const result = await StorageService.testDatabaseConnection();
+            
+            if (result) {
+                Components.toast('Koneksi ke Supabase berhasil!', 'success');
+                // Push local data to database
+                try {
+                    await StorageService.pushLocalDataToDatabase();
+                    Components.toast('Data lokal berhasil di-sync ke Supabase', 'success');
+                } catch (e) {
+                    console.warn('Push data failed:', e.message);
+                }
+            }
+        } catch (error) {
+            Components.toast(`Koneksi gagal: ${error.message}`, 'error');
+            // Revert to local mode
+            StorageService.setMode('local');
+        }
     }
 };
