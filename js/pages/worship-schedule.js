@@ -155,26 +155,23 @@ const WorshipSchedule = {
         this.searchDebounceTimer = setTimeout(() => {
             // Save cursor position right BEFORE render
             const input = document.getElementById('worshipScheduleSearchInput');
-            const wasFocused = document.activeElement === input;
             const savedValue = input ? input.value : value;
             const savedPos = input ? input.selectionStart : value.length;
             
             this.render();
             
-            // Restore input value and cursor position AFTER render
-            const newInput = document.getElementById('worshipScheduleSearchInput');
-            if (newInput) {
-                newInput.value = savedValue;
-                if (savedPos >= 0 && savedPos <= savedValue.length) {
-                    newInput.setSelectionRange(savedPos, savedPos);
-                }
-                // Keep focus active
-                if (wasFocused || savedValue.length > 0) {
-                    newInput.focus();
-                    newInput.setSelectionRange(savedValue.length, savedValue.length);
-                }
-            }
-        }, 600);
+            // Use requestAnimationFrame to focus after DOM is fully updated
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    const newInput = document.getElementById('worshipScheduleSearchInput');
+                    if (newInput) {
+                        newInput.value = savedValue;
+                        newInput.focus();
+                        newInput.setSelectionRange(savedValue.length, savedValue.length);
+                    }
+                });
+            });
+        }, 300);
     },
 
     handleCategoryFilter(value) {

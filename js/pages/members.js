@@ -259,35 +259,30 @@ const Members = {
         this.filters.search = value;
         this.applyFilters();
         
-        // Debounce render to prevent cursor jumping - longer delay for smoother typing
+        // Debounce render to prevent cursor jumping
         if (this.searchDebounceTimer) {
             clearTimeout(this.searchDebounceTimer);
         }
         this.searchDebounceTimer = setTimeout(() => {
-            // Save cursor position right BEFORE render (after debounce completes)
+            // Save cursor position right BEFORE render
             const input = document.getElementById('membersSearchInput');
-            const wasFocused = document.activeElement === input;
             const savedValue = input ? input.value : value;
             const savedPos = input ? input.selectionStart : value.length;
             
             this.render();
             
-            // Restore input value and cursor position AFTER render
-            const newInput = document.getElementById('membersSearchInput');
-            if (newInput) {
-                newInput.value = savedValue;
-                // Only restore cursor if it's within valid range
-                if (savedPos >= 0 && savedPos <= savedValue.length) {
-                    newInput.setSelectionRange(savedPos, savedPos);
-                }
-                // Keep focus active if it was focused before
-                if (wasFocused || savedValue.length > 0) {
-                    newInput.focus();
-                    // Ensure cursor is at the end
-                    newInput.setSelectionRange(savedValue.length, savedValue.length);
-                }
-            }
-        }, 600);
+            // Use requestAnimationFrame to focus after DOM is fully updated
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    const newInput = document.getElementById('membersSearchInput');
+                    if (newInput) {
+                        newInput.value = savedValue;
+                        newInput.focus();
+                        newInput.setSelectionRange(savedValue.length, savedValue.length);
+                    }
+                });
+            });
+        }, 300);
     },
 
     handleStatusFilter(value) {
