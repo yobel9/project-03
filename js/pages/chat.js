@@ -3,56 +3,59 @@ const Chat = {
     currentUser: null,
     messages: [],
     chatInterval: null,
+    isModalOpen: false,
 
     render() {
+        // Render as modal instead of full page
+        this.showModal();
+    },
+
+    showModal() {
+        if (this.isModalOpen) return;
+        this.isModalOpen = true;
+        
         const user = Auth.getCurrentUser();
         if (!user) {
-            return '<div class="card"><p>Silakan login terlebih dahulu untuk mengakses chat.</p></div>';
+            Components.toast('Silakan login terlebih dahulu', 'warning');
+            return;
         }
         
         this.currentUser = user;
+        this.loadMessages();
         
-        return `
-            <div class="page-header">
-                <h1 class="page-title">💬 Chat Admin</h1>
-                <p class="page-subtitle">Kirim pesan kepada admin jika ada masalah</p>
-            </div>
-            
-            <!-- User Status -->
-            <div class="card" style="margin-bottom: 16px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <strong>Status Kamu:</strong> 
-                        <span id="myStatus" style="color: var(--success);">● Online</span>
-                    </div>
-                    <div>
-                        <strong>Admin:</strong> 
-                        <span id="adminStatus">● Offline</span>
-                    </div>
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.id = 'chatModal';
+        modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:end;justify-content:end;padding:16px;';
+        modal.onclick = (e) => {
+            if (e.target === modal) this.closeModal();
+        };
+        
+        modal.innerHTML = `
+            <div style="background:white;border-radius:16px;width:100%;max-width:400px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 4px 20px rgba(0,0,0,0.2);">
+                <div style="padding:16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+                    <h3 style="margin:0;font-size:16px;">💬 Chat Admin</h3>
+                    <button onclick="Chat.closeModal()" style="border:none;background:none;font-size:24px;cursor:pointer;">&times;</button>
                 </div>
-            </div>
-            
-            <!-- Chat Messages -->
-            <div class="card" style="margin-bottom: 16px;">
-                <div id="chatMessages" style="height: 400px; overflow-y: auto; padding: 12px; background: var(--bg-secondary); border-radius: var(--radius);">
+                <div id="chatMessages" style="flex:1;overflow-y:auto;padding:16px;background:#f9f9f9;min-height:300px;">
                     ${this.renderMessages()}
                 </div>
-            </div>
-            
-            <!-- Chat Input -->
-            <div class="card">
-                <div style="display: flex; gap: 12px;">
-                    <input type="text" id="chatInput" class="form-input" 
-                        placeholder="Ketik pesan..." 
-                        onkeypress="if(event.key==='Enter')Chat.sendMessage()"
-                        style="flex: 1;">
-                    <button class="btn btn-primary" onclick="Chat.sendMessage()">
-                        <svg viewBox="0 0 24 24" fill="none" style="width: 20px; height: 20px;"><path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        Kirim
-                    </button>
+                <div style="padding:16px;border-top:1px solid #eee;display:flex;gap:8px;">
+                    <input type="text" id="chatInput" class="form-input" placeholder="Ketik pesan..." style="flex:1;" onkeypress="if(event.key==='Enter')Chat.sendMessage()">
+                    <button class="btn btn-primary" onclick="Chat.sendMessage()">Kirim</button>
                 </div>
             </div>
         `;
+        
+        document.body.appendChild(modal);
+    },
+
+    closeModal() {
+        this.isModalOpen = false;
+        const modal = document.getElementById('chatModal');
+        if (modal) modal.remove();
+        // Reset to dashboard
+        window.location.hash = '';
     },
 
     renderMessages() {
@@ -80,8 +83,7 @@ const Chat = {
     },
 
     async afterRender() {
-        await this.loadMessages();
-        this.startAutoRefresh();
+        // For modal, we don't need afterRender since it's handled in showModal
     },
 
     async loadMessages() {

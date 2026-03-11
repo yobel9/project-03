@@ -60,6 +60,14 @@ const App = {
         const targetPage = hash && this.pages[hash] ? hash : 'dashboard';
         console.log('Initial page:', targetPage, '(hash:', hash, ')');
         
+        // Listen for hash changes
+        window.addEventListener('hashchange', () => {
+            const newHash = window.location.hash.replace('#', '');
+            if (newHash && this.pages[newHash]) {
+                this.loadPage(newHash);
+            }
+        });
+        
         // Apply saved theme
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'dark') {
@@ -256,6 +264,12 @@ const App = {
         }
         const pageConfig = this.pages[pageName];
         if (!pageConfig) return;
+        
+        // Special handling for chat - show as modal
+        if (pageName === 'chat') {
+            pageConfig.render();
+            return;
+        }
 
         this.currentPage = pageName;
         
