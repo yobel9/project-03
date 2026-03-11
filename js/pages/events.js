@@ -31,7 +31,7 @@ const Events = {
                 <div class="filters">
                     <div class="filter-group">
                         <label>Cari:</label>
-                        <input id="eventsSearchInput" type="text" class="form-input" placeholder="Nama acara, lokasi, deskripsi..." value="${this.filters.search}" onkeyup="if(event.key==='Enter'){Events.handleSearch(this.value)}" onblur="Events.handleSearch(this.value)">
+                        <input id="eventsSearchInput" type="text" class="form-input" placeholder="Nama acara, lokasi, deskripsi..." value="${this.filters.search}" oninput="Events.handleSearch(this.value)">
                     </div>
                     <div class="filter-group">
                         <label>Status:</label>
@@ -235,7 +235,28 @@ const Events = {
     handleSearch(value) {
         this.filters.search = value;
         this.applyFilters();
-        this.render();
+        
+        // Debounce render to prevent cursor jumping
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+        this.searchDebounceTimer = setTimeout(() => {
+            // Save cursor position right BEFORE render
+            const input = document.getElementById('eventsSearchInput');
+            const savedValue = input ? input.value : value;
+            const savedPos = input ? input.selectionStart : value.length;
+            
+            this.render();
+            
+            // Restore input value and cursor position AFTER render
+            const newInput = document.getElementById('eventsSearchInput');
+            if (newInput) {
+                newInput.value = savedValue;
+                if (savedPos >= 0 && savedPos <= savedValue.length) {
+                    newInput.setSelectionRange(savedPos, savedPos);
+                }
+            }
+        }, 500);
     },
 
     handleStatusFilter(value) {

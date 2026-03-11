@@ -51,7 +51,7 @@ const ChurchAnnouncements = {
                 <div class="filters">
                     <div class="filter-group">
                         <label>Cari:</label>
-                        <input id="churchAnnouncementSearchInput" type="text" class="form-input" placeholder="Judul atau isi pengumuman..." value="${this.filters.search}" onkeyup="if(event.key==='Enter'){ChurchAnnouncements.handleSearch(this.value)}" onblur="ChurchAnnouncements.handleSearch(this.value)">
+                        <input id="churchAnnouncementSearchInput" type="text" class="form-input" placeholder="Judul atau isi pengumuman..." value="${this.filters.search}" oninput="ChurchAnnouncements.handleSearch(this.value)">
                     </div>
                     <div class="filter-group">
                         <label>Status:</label>
@@ -167,7 +167,28 @@ const ChurchAnnouncements = {
     handleSearch(value) {
         this.filters.search = value;
         this.applyFilters();
-        this.render();
+        
+        // Debounce render to prevent cursor jumping
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+        this.searchDebounceTimer = setTimeout(() => {
+            // Save cursor position right BEFORE render
+            const input = document.getElementById('churchAnnouncementSearchInput');
+            const savedValue = input ? input.value : value;
+            const savedPos = input ? input.selectionStart : value.length;
+            
+            this.render();
+            
+            // Restore input value and cursor position AFTER render
+            const newInput = document.getElementById('churchAnnouncementSearchInput');
+            if (newInput) {
+                newInput.value = savedValue;
+                if (savedPos >= 0 && savedPos <= savedValue.length) {
+                    newInput.setSelectionRange(savedPos, savedPos);
+                }
+            }
+        }, 500);
     },
 
     handleStatusFilter(value) {

@@ -42,7 +42,7 @@ const Users = {
                 <div class="filters">
                     <div class="filter-group">
                         <label>Cari:</label>
-                        <input id="usersSearchInput" type="text" class="form-input" placeholder="Nama atau username..." value="${this.filters.search}" onkeyup="if(event.key==='Enter'){Users.handleSearch(this.value)}" onblur="Users.handleSearch(this.value)">
+                        <input id="usersSearchInput" type="text" class="form-input" placeholder="Nama atau username..." value="${this.filters.search}" oninput="Users.handleSearch(this.value)">
                     </div>
                 </div>
 
@@ -114,7 +114,28 @@ const Users = {
     handleSearch(value) {
         this.filters.search = value;
         this.applyFilters();
-        this.render();
+        
+        // Debounce render to prevent cursor jumping
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+        this.searchDebounceTimer = setTimeout(() => {
+            // Save cursor position right BEFORE render
+            const input = document.getElementById('usersSearchInput');
+            const savedValue = input ? input.value : value;
+            const savedPos = input ? input.selectionStart : value.length;
+            
+            this.render();
+            
+            // Restore input value and cursor position AFTER render
+            const newInput = document.getElementById('usersSearchInput');
+            if (newInput) {
+                newInput.value = savedValue;
+                if (savedPos >= 0 && savedPos <= savedValue.length) {
+                    newInput.setSelectionRange(savedPos, savedPos);
+                }
+            }
+        }, 500);
     },
 
     getFormHtml(item = {}) {

@@ -61,7 +61,7 @@ const Members = {
                     <div class="filter-group">
                         <label>Pencarian:</label>
                         <input id="membersSearchInput" type="text" class="form-input" placeholder="Nama, NIK, email, atau telepon..." 
-                               value="${this.filters.search}" onkeyup="if(event.key==='Enter'){Members.handleSearch(this.value)}" onblur="Members.handleSearch(this.value)">
+                               value="${this.filters.search}" oninput="Members.handleSearch(this.value)">
                     </div>
                     <div class="filter-group">
                         <label>Status:</label>
@@ -258,7 +258,29 @@ const Members = {
     handleSearch(value) {
         this.filters.search = value;
         this.applyFilters();
-        this.render();
+        
+        // Debounce render to prevent cursor jumping - longer delay for smoother typing
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+        }
+        this.searchDebounceTimer = setTimeout(() => {
+            // Save cursor position right BEFORE render (after debounce completes)
+            const input = document.getElementById('membersSearchInput');
+            const savedValue = input ? input.value : value;
+            const savedPos = input ? input.selectionStart : value.length;
+            
+            this.render();
+            
+            // Restore input value and cursor position AFTER render
+            const newInput = document.getElementById('membersSearchInput');
+            if (newInput) {
+                newInput.value = savedValue;
+                // Only restore cursor if it's within valid range
+                if (savedPos >= 0 && savedPos <= savedValue.length) {
+                    newInput.setSelectionRange(savedPos, savedPos);
+                }
+            }
+        }, 500);
     },
 
     handleStatusFilter(value) {
