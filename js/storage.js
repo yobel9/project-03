@@ -45,57 +45,17 @@ class DatabaseAdapter {
     }
 
     async getItem(key) {
-        // Always try localStorage first for faster reads
+        // Always try localStorage first - never fallback to Supabase
         const localData = localStorage.getItem(key);
         if (localData) {
             return localData;
         }
-        
-        if (!this.supabase || !this.config.table) {
-            return null;
-        }
-        try {
-            const { data, error } = await this.supabase
-                .from(this.config.table)
-                .select('payload')
-                .eq('id', key)
-                .single();
-
-            if (error && error.code === 'PGRST116') { // No rows found
-                return null;
-            } else if (error) {
-                throw error;
-            }
-            return data?.payload ? JSON.stringify(data.payload) : null;
-        } catch (error) {
-            console.error(`Gagal mengambil item '${key}' dari Supabase:`, error.message);
-            return null;
-        }
+        return null;
     }
 
     async setItem(key, value) {
-        // Always save to localStorage as backup first
+        // Always save to localStorage - Supabase sync disabled for now
         localStorage.setItem(key, value);
-        
-        if (!this.supabase || !this.config.table) {
-            return;
-        }
-        try {
-            const payload = {
-                id: key,
-                payload: JSON.parse(value),
-                updated_at: new Date().toISOString()
-            };
-            const { error } = await this.supabase
-                .from(this.config.table)
-                .upsert(payload, { onConflict: 'id' });
-
-            if (error) {
-                throw error;
-            }
-        } catch (error) {
-            console.error(`Gagal menyimpan item '${key}' ke Supabase:`, error.message);
-        }
     }
 
     async removeItem(key) {
