@@ -177,13 +177,24 @@ const Settings = {
                 const base64 = e.target.result;
                 localStorage.setItem('churchLogo', base64);
                 
-                // Update logo immediately
-                const logoImage = document.getElementById('logoImage');
-                const logoSvg = document.getElementById('logoSvg');
-                if (logoImage && logoSvg) {
-                    logoImage.src = base64;
-                    logoImage.style.display = 'block';
-                    logoSvg.style.display = 'none';
+                // Update logo in sidebar immediately
+                const logoContainer = document.getElementById('sidebarLogo');
+                if (logoContainer) {
+                    let img = logoContainer.querySelector('img');
+                    let svg = logoContainer.querySelector('svg');
+                    
+                    if (!img) {
+                        img = document.createElement('img');
+                        img.id = 'logoImage';
+                        img.className = 'logo-icon';
+                        img.style.cssText = 'width: 32px; height: 32px; border-radius: 8px; object-fit: cover; display: block;';
+                        img.alt = 'Logo';
+                        if (svg) svg.parentNode.insertBefore(img, svg);
+                    }
+                    
+                    img.src = base64;
+                    img.style.display = 'block';
+                    if (svg) svg.style.display = 'none';
                 }
                 
                 Components.toast('Informasi gereja berhasil disimpan!', 'success');
