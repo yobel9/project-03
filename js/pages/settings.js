@@ -108,7 +108,7 @@ const Settings = {
                     <small style="color: var(--text-secondary);">Dapatkan dari Project Settings > API > anon public</small>
                 </div>
                 
-                <div style="display: flex; gap: 12px; margin-top: 16px;">
+                <div style="display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap;">
                     <button class="btn btn-primary" onclick="Settings.saveSupabaseConfig()">
                         <svg viewBox="0 0 24 24" fill="none" style="width: 18px; height: 18px; margin-right: 8px;"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         Sambungkan
@@ -116,7 +116,7 @@ const Settings = {
                     <button class="btn btn-secondary" onclick="Settings.testSupabaseConnection()">
                         Test Koneksi
                     </button>
-                    <button class="btn btn-warning" onclick="Settings.resetSupabaseConfig()" style="margin-left: auto;">
+                    <button class="btn btn-warning" onclick="Settings.resetSupabaseConfig()">
                         Reset ke Default
                     </button>
                 </div>
