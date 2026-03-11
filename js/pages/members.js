@@ -2,7 +2,7 @@
 // Church Admin - Members Page
 // ============================================
 
-const Members = {
+var Members = {
     members: [],
     filteredMembers: [],
     currentPage: 1,
