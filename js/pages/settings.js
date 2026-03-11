@@ -287,9 +287,11 @@ const Settings = {
             return;
         }
         
-        // Save to storage
+        // Save to storage - enable both auto sync and auto pull
         StorageService.setDatabaseConfig({ url, anonKey });
         StorageService.setMode('database');
+        StorageService.setAutoSyncEnabled(true);
+        StorageService.setAutoPullEnabled(true);
         
         Components.toast('Konfigurasi Supabase disimpan. Menguji koneksi...', 'success');
         
