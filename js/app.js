@@ -374,26 +374,66 @@ const App = {
     
     // Load app settings (church name, logo)
     loadAppSettings() {
-        const churchName = localStorage.getItem('churchName');
+        // Get saved values from localStorage
+        const churchName = localStorage.getItem('churchName') || '';
         const churchShortName = localStorage.getItem('churchShortName') || churchName;
-        const churchLogo = localStorage.getItem('churchLogo');
+        const churchLogo = localStorage.getItem('churchLogo') || '';
+        
+        // If no saved settings, use defaults
+        if (!churchName && !churchShortName && !churchLogo) {
+            return;
+        }
+        
+        console.log('Loading app settings:', { churchName, churchShortName, hasLogo: !!churchLogo });
         
         // Use short name for sidebar, full name for title
         const displayName = churchShortName || churchName || 'GerejaKu';
-        const logoText = document.getElementById('logoText');
-        if (logoText) logoText.textContent = displayName;
+        
+        // Update sidebar text - find all possible elements
+        const sidebarLogo = document.getElementById('sidebarLogo');
+        if (sidebarLogo) {
+            const logoText = sidebarLogo.querySelector('.logo-text');
+            if (logoText) {
+                logoText.textContent = displayName;
+                console.log('Updated sidebar text to:', displayName);
+            }
+        }
+        
+        // Also try direct ID
+        const logoTextEl = document.getElementById('logoText');
+        if (logoTextEl) {
+            logoTextEl.textContent = displayName;
+        }
         
         // Update document title (use full name)
         const fullName = churchName || 'GerejaKu';
         document.title = fullName + ' Admin';
         
+        // Update logo in sidebar
         if (churchLogo) {
-            const logoImage = document.getElementById('logoImage');
-            const logoSvg = document.getElementById('logoSvg');
-            if (logoImage && logoSvg) {
-                logoImage.src = churchLogo;
-                logoImage.style.display = 'block';
-                logoSvg.style.display = 'none';
+            // Try to find the image element in sidebar
+            const logoImg = document.querySelector('#sidebarLogo img');
+            const logoSvg = document.querySelector('#sidebarLogo svg');
+            
+            if (logoImg) {
+                logoImg.src = churchLogo;
+                logoImg.style.display = 'block';
+                if (logoSvg) logoSvg.style.display = 'none';
+                console.log('Updated logo image');
+            } else {
+                // Create img element if it doesn't exist
+                const newImg = document.createElement('img');
+                newImg.src = churchLogo;
+                newImg.alt = 'Logo';
+                newImg.className = 'logo-icon';
+                newImg.style.cssText = 'width: 32px; height: 32px; border-radius: 8px; object-fit: cover; display: block;';
+                
+                if (logoSvg && logoSvg.parentNode) {
+                    logoSvg.parentNode.insertBefore(newImg, logoSvg);
+                } else if (sidebarLogo) {
+                    sidebarLogo.appendChild(newImg);
+                }
+                console.log('Created new logo image element');
             }
         }
     },
