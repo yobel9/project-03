@@ -21,6 +21,8 @@ class LocalStorageAdapter {
 
 class DatabaseAdapter {
     constructor(config = {}) {
+        console.log('=== DatabaseAdapter Constructor ===');
+        console.log('Config:', config);
         this.config = config;
         this.supabase = null;
         this.initializeSupabase();
@@ -45,24 +47,49 @@ class DatabaseAdapter {
     }
 
     async getItem(key) {
-        // Always try localStorage first - never fallback to Supabase
-        const localData = localStorage.getItem(key);
-        if (localData) {
-            return localData;
+        // In database mode, always try Supabase first, skip localStorage
+        if (this.supabase && this.config && this.config.table) {
+            try {
+                console.log('Getting from Supabase for key:', key);
+                const { data, error } = await this.supabase
+                    .from(this.config.table)
+                    .select('payload')
+                    .eq('id', key)
+                    .single();
+                
+                if (data && data.payload) {
+                    console.log('Got data from Supabase for key:', key);
+                    return JSON.stringify(data.payload);
+                }
+            } catch (e) {
+                console.warn('Failed to get from Supabase:', e.message);
+            }
         }
-        return null;
+        // Fallback to localStorage only if Supabase fails or not configured
+        const localData = localStorage.getItem(key);
+        return localData || null;
     }
 
     async setItem(key, value) {
         // Always save to localStorage first
         localStorage.setItem(key, value);
+        console.log('Saving to localStorage:', key);
         
         // Then sync to Supabase immediately
+        console.log('Supabase config:', this.supabase ? 'exists' : 'null', 'table:', this.config?.table);
         if (!this.supabase || !this.config.table) {
+            console.log('Skipping Supabase sync - not configured');
             return;
         }
         
-        this.syncToSupabase(key, value);
+        // Force push to Supabase immediately
+        console.log('Pushing to Supabase immediately...');
+        try {
+            await this.pushLocalDataToDatabase(key);
+            console.log('Pushed to Supabase successfully');
+        } catch (e) {
+            console.error('Failed to push to Supabase:', e.message);
+        }
     }
 
     async removeItem(key) {
@@ -107,7 +134,13 @@ const StorageService = {
 
     getMode() {
         const mode = localStorage.getItem(this.modeKey) || this.defaultMode;
-        return this.availableModes[mode] ? mode : this.defaultMode;
+        // Auto-enable database mode if Supabase config is available
+        if (mode === 'local' && this.isDatabaseConfigReady()) {
+            console.log('[StorageService] Auto-enabling database mode');
+            this.setMode('database');
+            return 'database';
+        }
+        return mode;
     },
 
     setMode(mode) {
@@ -256,10 +289,14 @@ const StorageService = {
 
     createAdapter() {
         const mode = this.getMode();
+        console.log('=== createAdapter ===');
+        console.log('Mode:', mode);
         const AdapterClass = this.availableModes[mode] || LocalStorageAdapter;
         try {
             if (mode === 'database') {
-                return new AdapterClass(this.getDatabaseConfig());
+                const config = this.getDatabaseConfig();
+                console.log('Creating DatabaseAdapter with config:', config);
+                return new AdapterClass(config);
             }
             return new AdapterClass();
         } catch (error) {
@@ -270,7 +307,20 @@ const StorageService = {
     },
 
     init() {
-        if (!this.adapter || this.adapter.config !== this.getDatabaseConfig()) { // Re-initialize if config changed
+        console.log('=== StorageService.init ===');
+        console.log('Current mode:', this.getMode());
+        console.log('Current adapter:', this.adapter ? this.adapter.constructor.name : 'none');
+        
+        const currentConfig = this.getDatabaseConfig();
+        const needsReinit = !this.adapter || 
+            (this.adapter.config && (
+                this.adapter.config.url !== currentConfig.url || 
+                this.adapter.config.anonKey !== currentConfig.anonKey ||
+                this.adapter.config.table !== currentConfig.table
+            ));
+        
+        if (needsReinit) {
+            console.log('Creating new adapter (config changed or no adapter)...');
             this.adapter = this.createAdapter();
         }
     },
@@ -415,10 +465,14 @@ const StorageService = {
     },
 
     async pushLocalDataToDatabase(storageKey = 'churchAdminData') {
+        console.log('=== pushLocalDataToDatabase ===');
+        console.log('StorageKey:', storageKey);
+        
         if (!this.isDatabaseConfigReady()) {
             throw new Error('Konfigurasi database belum lengkap.');
         }
         const localData = await this.getJSON(storageKey, null);
+        console.log('LocalData keys:', localData ? Object.keys(localData) : 'null');
         if (!localData) {
             throw new Error('Data lokal tidak ditemukan.');
         }
@@ -428,14 +482,19 @@ const StorageService = {
             payload: localData,
             updated_at: new Date().toISOString()
         };
+        console.log('Pushing payload with keys:', Object.keys(localData));
 
         const config = this.getDatabaseConfig();
+        console.log('Config table:', config.table);
         const client = supabase.createClient(config.url, config.anonKey);
 
-        const { error } = await client
+        const { data, error } = await client
             .from(config.table)
-            .upsert(payload, { onConflict: 'id' });
+            .upsert(payload, { onConflict: 'id' })
+            .select();
 
+        console.log('Push result - data:', data, 'error:', error);
+        
         if (error) {
             this.markSyncError(error.message || 'Push data ke database gagal.');
             throw new Error(error.message || 'Push data ke database gagal.');
@@ -449,9 +508,8 @@ const StorageService = {
         if (!this.isDatabaseConfigReady()) {
             throw new Error('Konfigurasi database belum lengkap.');
         }
-        if (!force && this.getSyncMeta().dirty) {
-            throw new Error('Ada perubahan lokal yang belum tersinkron. Push dulu atau gunakan force pull.');
-        }
+        
+        console.log('[StorageService] Pulling from Supabase, force:', force);
 
         const config = this.getDatabaseConfig();
         const client = supabase.createClient(config.url, config.anonKey);
@@ -473,19 +531,22 @@ const StorageService = {
         }
 
         const row = data;
-        const remoteUpdatedAt = row.updated_at || '';
-        const lastRemoteUpdatedAt = this.getSyncMeta().lastRemoteUpdatedAt || '';
-        const changed = !(remoteUpdatedAt && lastRemoteUpdatedAt && remoteUpdatedAt === lastRemoteUpdatedAt);
-
-        if (changed) {
-            await this.setJSON(storageKey, row.payload);
-        }
-        this.markPullSuccess(remoteUpdatedAt);
-        return { row, changed };
+        
+        // Always save to localStorage when pulling from Supabase
+        console.log('[StorageService] Saving pulled data to localStorage');
+        await this.setJSON(storageKey, row.payload);
+        this.markPullSuccess(row.updated_at);
+        return { row, changed: true };
     },
 
     queueAutoPush(storageKey = 'churchAdminData', delayMs = 1200) {
+        console.log('=== queueAutoPush ===');
+        console.log('Mode:', this.getMode());
+        console.log('AutoSync enabled:', this.isAutoSyncEnabled());
+        console.log('Config ready:', this.isDatabaseConfigReady());
+        
         if (this.getMode() !== 'database' || !this.isAutoSyncEnabled() || !this.isDatabaseConfigReady()) {
+            console.log('AutoPush skipped - conditions not met');
             return;
         }
         if (this.syncTimer) {
@@ -511,14 +572,19 @@ const StorageService = {
     },
 
     async autoPullOnStartup(storageKey = 'churchAdminData') {
+        // Always pull from Supabase, don't check localStorage
         if (this.getMode() !== 'database' || !this.isAutoPullEnabled() || !this.isDatabaseConfigReady()) {
             return { pulled: false, reason: 'disabled' };
         }
+        
+        // Always pull from Supabase - don't skip if local data exists
+        console.log('[StorageService] Auto pulling from Supabase...');
+        
         if (this.getSyncMeta().dirty) {
             return { pulled: false, reason: 'local_dirty' };
         }
         try {
-            const result = await this.pullDatabaseDataToLocal(storageKey, { force: false });
+            const result = await this.pullDatabaseDataToLocal(storageKey, { force: true });
             return { pulled: true, changed: result.changed, reason: 'ok' };
         } catch (error) {
             this.markSyncError(error.message);
@@ -529,7 +595,14 @@ const StorageService = {
 
     // Sync to Supabase immediately
     async syncToSupabase(key, value) {
+        console.log('=== SYNC DEBUG ===');
+        console.log('Key:', key);
+        console.log('Value type:', typeof value);
+        console.log('Supabase exists:', !!this.supabase);
+        console.log('Table:', this.config?.table);
+        
         if (!this.supabase || !this.config.table) {
+            console.log('Sync aborted: missing config');
             return;
         }
         
@@ -539,13 +612,19 @@ const StorageService = {
                 payload: JSON.parse(value),
                 updated_at: new Date().toISOString()
             };
-            const { error } = await this.supabase
+            console.log('Upserting payload:', payload);
+            
+            const { data, error } = await this.supabase
                 .from(this.config.table)
-                .upsert(payload, { onConflict: 'id' });
+                .upsert(payload, { onConflict: 'id' })
+                .select();
+            
             if (error) {
                 console.error('Sync failed:', error.message);
+                console.error('Full error:', error);
             } else {
                 console.log('Sync to Supabase successful');
+                console.log('Returned data:', data);
             }
         } catch (error) {
             console.error('Sync error:', error.message);
@@ -597,8 +676,13 @@ const StorageService = {
     },
 
     async setJSON(key, value) {
+        console.log('=== StorageService.setJSON ===');
+        console.log('Key:', key);
+        console.log('Value preview:', JSON.stringify(value).substring(0, 100));
+        console.log('Adapter:', this.adapter ? this.adapter.constructor.name : 'null');
         try {
             this.init();
+            console.log('Adapter after init:', this.adapter ? this.adapter.constructor.name : 'null');
             await this.adapter.setItem(key, JSON.stringify(value));
         } catch (error) {
             console.error(`Gagal menyimpan key '${key}':`, error.message);

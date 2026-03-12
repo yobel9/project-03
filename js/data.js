@@ -31,11 +31,33 @@ const AppData = {
             
             const hasData = await StorageService.has('churchAdminData');
             console.log('Has data:', hasData);
-            if (!hasData) {
+            
+            // In database mode, don't load default data - just use empty structure
+            const isDatabaseMode = StorageService.getMode() === 'database' && StorageService.isDatabaseConfigReady();
+            
+            if (!hasData && !isDatabaseMode) {
                 const defaultData = this.getDefaultData();
                 await StorageService.setJSON('churchAdminData', defaultData);
                 this._data = defaultData;
                 console.log('Default data saved');
+            } else if (!hasData && isDatabaseMode) {
+                // In database mode with no data, create empty data structure with admin user
+                const emptyData = {
+                    users: this.getDefaultUsers(),
+                    members: [],
+                    events: [],
+                    attendance: [],
+                    donations: [],
+                    expenses: [],
+                    inventory: [],
+                    structure: [],
+                    worshipSchedules: [],
+                    churchAnnouncements: [],
+                    activities: []
+                };
+                await StorageService.setJSON('churchAdminData', emptyData);
+                this._data = emptyData;
+                console.log('Empty data created for database mode');
             }
             const data = await StorageService.getJSON('churchAdminData', this.getDefaultData());
             this._data = data;
