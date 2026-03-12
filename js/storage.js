@@ -656,6 +656,11 @@ const StorageService = {
         try {
             this.init();
             const value = await this.adapter.getItem(key);
+            // In database mode, return true only if data exists in Supabase
+            // Don't fall back to localStorage
+            if (this.getMode() === 'database' && this.isDatabaseConfigReady()) {
+                return value !== null;
+            }
             return value !== null;
         } catch (error) {
             console.error(`Gagal mengecek key '${key}':`, error.message);
