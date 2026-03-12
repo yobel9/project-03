@@ -85,7 +85,8 @@ class DatabaseAdapter {
         // Force push to Supabase immediately
         console.log('Pushing to Supabase immediately...');
         try {
-            await this.pushLocalDataToDatabase(key);
+            // Call StorageService method, not this adapter's method
+            await StorageService.pushLocalDataToDatabase(key);
             console.log('Pushed to Supabase successfully');
         } catch (e) {
             console.error('Failed to push to Supabase:', e.message);
