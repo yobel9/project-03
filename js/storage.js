@@ -47,7 +47,7 @@ class DatabaseAdapter {
     }
 
     async getItem(key) {
-        // In database mode, always try Supabase first, skip localStorage
+        // In database mode, always try Supabase first
         if (this.supabase && this.config && this.config.table) {
             try {
                 console.log('Getting from Supabase for key:', key);
@@ -60,12 +60,16 @@ class DatabaseAdapter {
                 if (data && data.payload) {
                     console.log('Got data from Supabase for key:', key);
                     return JSON.stringify(data.payload);
+                } else {
+                    // Supabase has no data for this key - return null, don't fallback to localStorage
+                    console.log('No data in Supabase for key:', key);
+                    return null;
                 }
             } catch (e) {
                 console.warn('Failed to get from Supabase:', e.message);
             }
         }
-        // Fallback to localStorage only if Supabase fails or not configured
+        // Only use localStorage if NOT in database mode
         const localData = localStorage.getItem(key);
         return localData || null;
     }
