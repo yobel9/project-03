@@ -265,15 +265,33 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script>
-      // Force clear all caches before anything loads
-      if ('caches' in window) {
-        caches.keys().then(names => names.forEach(name => caches.delete(name)));
-      }
-      // Clear localStorage if in database mode
+      // Force clear all caches and localStorage before anything loads
+      // This ensures fresh data is loaded from Supabase
+      const doHardReset = async () => {
+        // Clear all caches
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map(name => caches.delete(name)));
+        }
+        // Clear localStorage completely
+        localStorage.clear();
+        sessionStorage.clear();
+        // Also clear indexedDB if present
+        if (window.indexedDB && window.indexedDB.databases) {
+          const dbs = await window.indexedDB.databases();
+          dbs.forEach(db => {
+            if (db.name) indexedDB.deleteDatabase(db.name);
+          });
+        }
+        console.log('All caches and storage cleared');
+      };
+      
+      // Check if we should reset - if in database mode
       const dbConfig = {provider: 'supabase', url: 'https://vkshfbbwiejfcwiuobdn.supabase.co', anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZrc2hmYmJ3aWVqZmN3aXVvYmRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwNTA0NDUsImV4cCI6MjA4ODYyNjQ0NX0.yjuIhKiE6gM63nTjbnyeiv1JL0doV6mYVTlxXTXOt94', table: 'app_storage'};
-      if (localStorage.getItem('storageMode') === 'database' && dbConfig.url) {
-        // Don't load from localStorage - will load from Supabase instead
-      }
+      const currentMode = localStorage.getItem('storageMode') || 'local';
+      
+      // Always do hard reset when loading - forces fresh load from Supabase
+      doHardReset();
     </script>
     <!-- Page scripts are lazy loaded when needed -->
     <script src="js/app.js?v=20260312"></script>
