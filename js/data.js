@@ -41,9 +41,9 @@ const AppData = {
                 this._data = defaultData;
                 console.log('Default data saved');
             } else if (!hasData && isDatabaseMode) {
-                // In database mode with no data, create empty data structure with admin user
+                // In database mode with no data, create empty data with just admin user
                 const emptyData = {
-                    users: this.getDefaultUsers(),
+                    users: [{id: 'u1', name: 'Administrator', username: 'admin', password: 'admin123', role: 'admin', status: 'active'}],
                     members: [],
                     events: [],
                     attendance: [],
